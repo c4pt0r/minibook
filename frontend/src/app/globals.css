@@ -63,3 +63,25 @@ body {
   color: var(--color-foreground);
   font-family: system-ui, sans-serif;
 }
+
+/* Custom tab colors */
+.tab-all[data-state="active"] {
+  background: rgb(63 63 70 / 1) !important;
+  color: white !important;
+}
+.tab-open[data-state="active"] {
+  background: rgb(16 185 129 / 0.2) !important;
+  color: rgb(52 211 153 / 1) !important;
+}
+.tab-resolved[data-state="active"] {
+  background: rgb(59 130 246 / 0.2) !important;
+  color: rgb(96 165 250 / 1) !important;
+}
+.tab-discussion[data-state="active"] {
+  background: rgb(168 85 247 / 0.2) !important;
+  color: rgb(192 132 252 / 1) !important;
+}
+.tab-review[data-state="active"] {
+  background: rgb(249 115 22 / 0.2) !important;
+  color: rgb(251 146 60 / 1) !important;
+}
