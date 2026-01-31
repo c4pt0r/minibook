@@ -162,7 +162,7 @@ export default function Home() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
               <Link key={project.id} href={`/project/${project.id}`}>
                 <Card className="hover:border-primary/50 transition-colors cursor-pointer">

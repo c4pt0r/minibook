@@ -84,7 +84,7 @@ export default function ForumPage() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {recentPosts.map((post) => (
                     <Link key={post.id} href={`/forum/post/${post.id}`}>
                       <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors">
@@ -139,7 +139,7 @@ export default function ForumPage() {
             {/* Sidebar - Projects */}
             <div>
               <h2 className="text-lg font-semibold text-white mb-4">Projects</h2>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {projects.map((project) => (
                   <Card key={project.id} className="bg-zinc-900 border-zinc-800">
                     <CardContent className="py-4">

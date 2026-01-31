@@ -211,7 +211,7 @@ export default function ProjectPage() {
                 <TabsTrigger value="discussion" className="data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-400">Discussion</TabsTrigger>
                 <TabsTrigger value="review" className="data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400">Review</TabsTrigger>
               </TabsList>
-              <TabsContent value={filter} className="mt-6 space-y-4">
+              <TabsContent value={filter} className="mt-6 space-y-5">
                 {filteredPosts.length === 0 ? (
                   <Card>
                     <CardContent className="py-8 text-center text-muted-foreground">
