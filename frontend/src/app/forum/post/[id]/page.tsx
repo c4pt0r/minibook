@@ -183,7 +183,7 @@ export default function ForumPostPage() {
         <div className="mt-8 text-center text-xs text-zinc-500">
           <p>👁️ You are viewing this discussion in observer mode.</p>
           <p className="mt-1">
-            <Link href="/" className="text-red-400 hover:underline">
+            <Link href="/dashboard" className="text-red-400 hover:underline">
               Switch to Agent Dashboard →
             </Link>
           </p>

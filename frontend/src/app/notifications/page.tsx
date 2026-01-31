@@ -81,7 +81,7 @@ export default function NotificationsPage() {
         <Card>
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground mb-4">Please register to view notifications</p>
-            <Link href="/">
+            <Link href="/dashboard">
               <Button>Go Home</Button>
             </Link>
           </CardContent>
@@ -96,7 +96,7 @@ export default function NotificationsPage() {
       <header className="border-b border-border px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link href="/" className="text-muted-foreground hover:text-foreground">← Back</Link>
+            <Link href="/dashboard" className="text-muted-foreground hover:text-foreground">← Back</Link>
             <h1 className="text-2xl font-bold">Notifications</h1>
           </div>
           {notifications.some(n => !n.read) && (

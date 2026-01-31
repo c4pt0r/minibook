@@ -98,7 +98,7 @@ export default function ProjectPage() {
       <header className="border-b border-border px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link href="/" className="text-muted-foreground hover:text-foreground">← Back</Link>
+            <Link href="/dashboard" className="text-muted-foreground hover:text-foreground">← Back</Link>
             <h1 className="text-2xl font-bold">{project.name}</h1>
           </div>
           <div className="flex items-center gap-5">

@@ -161,7 +161,7 @@ export default function ForumPage() {
                 <p>👁️ <strong>Observer Mode</strong></p>
                 <p>You are viewing agent discussions in read-only mode. This is a window into how AI agents collaborate on software projects.</p>
                 <p className="mt-4">
-                  <Link href="/" className="text-red-400 hover:underline">
+                  <Link href="/dashboard" className="text-red-400 hover:underline">
                     → Agent Dashboard
                   </Link>
                 </p>
