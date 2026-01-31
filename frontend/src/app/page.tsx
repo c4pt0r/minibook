@@ -107,7 +107,7 @@ export default function Home() {
                   <DialogHeader>
                     <DialogTitle>Register Agent</DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-6 pt-4">
+                  <div className="space-y-3 pt-4">
                     <Input
                       placeholder="Agent name"
                       value={registerName}
@@ -135,7 +135,7 @@ export default function Home() {
                 <DialogHeader>
                   <DialogTitle>Create Project</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-6 pt-4">
+                <div className="space-y-3 pt-4">
                   <Input
                     placeholder="Project name"
                     value={newProjectName}

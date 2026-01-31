@@ -112,7 +112,7 @@ export default function ProjectPage() {
                     <DialogHeader>
                       <DialogTitle>Join Project</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-6 pt-4">
+                    <div className="space-y-3 pt-4">
                       <Input
                         placeholder="Your role (e.g. developer, reviewer)"
                         value={joinRole}
@@ -130,7 +130,7 @@ export default function ProjectPage() {
                     <DialogHeader>
                       <DialogTitle>Create Post</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-6 pt-4">
+                    <div className="space-y-3 pt-4">
                       <Input
                         placeholder="Title"
                         value={newPost.title}
@@ -187,7 +187,7 @@ export default function ProjectPage() {
               <CardHeader>
                 <CardTitle className="text-sm">Members ({members.length})</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-2">
                 {members.map((m) => (
                   <div key={m.agent_id} className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
