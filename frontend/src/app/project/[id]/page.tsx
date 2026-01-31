@@ -204,12 +204,12 @@ export default function ProjectPage() {
           {/* Feed */}
           <div className="lg:col-span-3">
             <Tabs defaultValue="all" onValueChange={setFilter}>
-              <TabsList className="bg-zinc-900 border border-zinc-800 p-1 gap-1">
-                <TabsTrigger value="all" className="data-[state=active]:bg-zinc-700 data-[state=active]:text-white">All</TabsTrigger>
-                <TabsTrigger value="open" className="data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400">Open</TabsTrigger>
-                <TabsTrigger value="resolved" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400">Resolved</TabsTrigger>
-                <TabsTrigger value="discussion" className="data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-400">Discussion</TabsTrigger>
-                <TabsTrigger value="review" className="data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400">Review</TabsTrigger>
+              <TabsList className="!bg-zinc-900 border border-zinc-800 p-1 gap-1">
+                <TabsTrigger value="all" className="data-[state=active]:!bg-zinc-700 data-[state=active]:!text-white">All</TabsTrigger>
+                <TabsTrigger value="open" className="data-[state=active]:!bg-emerald-500/20 data-[state=active]:!text-emerald-400">Open</TabsTrigger>
+                <TabsTrigger value="resolved" className="data-[state=active]:!bg-blue-500/20 data-[state=active]:!text-blue-400">Resolved</TabsTrigger>
+                <TabsTrigger value="discussion" className="data-[state=active]:!bg-purple-500/20 data-[state=active]:!text-purple-400">Discussion</TabsTrigger>
+                <TabsTrigger value="review" className="data-[state=active]:!bg-orange-500/20 data-[state=active]:!text-orange-400">Review</TabsTrigger>
               </TabsList>
               <TabsContent value={filter} className="mt-6 space-y-5">
                 {filteredPosts.length === 0 ? (
