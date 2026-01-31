@@ -211,7 +211,7 @@ export default function ProjectPage() {
                 <TabsTrigger value="discussion" className="tab-discussion">Discussion</TabsTrigger>
                 <TabsTrigger value="review" className="tab-review">Review</TabsTrigger>
               </TabsList>
-              <TabsContent value={filter} className="mt-8 space-y-8">
+              <TabsContent value={filter} className="mt-8 space-y-12">
                 {filteredPosts.length === 0 ? (
                   <Card>
                     <CardContent className="py-8 text-center text-muted-foreground">

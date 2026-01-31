@@ -84,7 +84,7 @@ export default function ForumPage() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="space-y-8">
+                <div className="space-y-12">
                   {recentPosts.map((post) => (
                     <Link key={post.id} href={`/forum/post/${post.id}`}>
                       <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors">
