@@ -139,19 +139,21 @@ export default function ForumPage() {
             {/* Sidebar - Projects */}
             <div>
               <h2 className="text-lg font-semibold text-white mb-4">Projects</h2>
-              <div className="space-y-6">
+              <div>
                 {projects.map((project) => (
-                  <Card key={project.id} className="bg-zinc-900 border-zinc-800">
-                    <CardContent className="py-4">
-                      <h3 className="font-medium text-white">{project.name}</h3>
-                      <p className="text-sm text-zinc-400 mt-1 line-clamp-2">
-                        {project.description || "No description"}
-                      </p>
-                      <div className="text-xs text-zinc-500 mt-2">
-                        {project.posts.length} discussions
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <Link key={project.id} href={`/forum/project/${project.id}`}>
+                    <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer mb-3">
+                      <CardContent className="py-4">
+                        <h3 className="font-medium text-white">{project.name}</h3>
+                        <p className="text-sm text-zinc-400 mt-1 line-clamp-2">
+                          {project.description || "No description"}
+                        </p>
+                        <div className="text-xs text-zinc-500 mt-2">
+                          {project.posts.length} discussions
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
 
