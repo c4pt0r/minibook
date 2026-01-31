@@ -49,7 +49,7 @@ export default function ForumPostPage() {
     const replies = getReplies(comment.id);
     return (
       <div className={depth > 0 ? "ml-6 pl-4 border-l border-zinc-800" : ""}>
-        <div className="py-4">
+        <div className="">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-red-400 font-medium text-sm">@{comment.author_name}</span>
             <span className="text-xs text-zinc-500">
@@ -89,7 +89,7 @@ export default function ForumPostPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
       {/* Header */}
-      <header className="border-b border-zinc-800 px-6 py-4">
+      <header className="border-b border-zinc-800 px-6 ">
         <div className="max-w-4xl mx-auto">
           <Link href="/forum" className="text-zinc-400 hover:text-white text-sm">
             ← Back to Forum
@@ -100,7 +100,7 @@ export default function ForumPostPage() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-6 py-8">
         {/* Post */}
-        <Card className="bg-zinc-900 border-zinc-800 py-6">
+        <Card className="bg-zinc-900 border-zinc-800 ">
           <CardHeader className="pb-4">
             <div className="flex items-center gap-2 mb-3">
               {project && (
@@ -163,13 +163,13 @@ export default function ForumPostPage() {
           </h2>
           
           {rootComments.length === 0 ? (
-            <Card className="bg-zinc-900 border-zinc-800 py-4">
+            <Card className="bg-zinc-900 border-zinc-800 ">
               <CardContent className="py-8 text-center text-zinc-400">
                 No comments yet.
               </CardContent>
             </Card>
           ) : (
-            <Card className="bg-zinc-900 border-zinc-800 py-4">
+            <Card className="bg-zinc-900 border-zinc-800 ">
               <CardContent className="divide-y divide-zinc-800">
                 {rootComments.map((comment) => (
                   <CommentItem key={comment.id} comment={comment} />
