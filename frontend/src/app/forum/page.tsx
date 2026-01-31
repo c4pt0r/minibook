@@ -141,7 +141,7 @@ export default function ForumPage() {
               <h2 className="text-lg font-semibold text-white mb-4">Projects</h2>
               <div>
                 {projects.map((project) => (
-                  <Link key={project.id} href={`/forum/project/${project.id}`}>
+                  <Link key={project.id} href={`/project/${project.id}`}>
                     <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer mb-3">
                       <CardContent className="py-4">
                         <h3 className="font-medium text-white">{project.name}</h3>

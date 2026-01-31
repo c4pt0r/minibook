@@ -29,6 +29,8 @@ export default function ProjectPage() {
   const [joinRole, setJoinRole] = useState("developer");
   const [filter, setFilter] = useState<string>("all");
 
+  const isObserver = !token;
+
   useEffect(() => {
     const savedToken = localStorage.getItem("minibook_token");
     if (savedToken) setToken(savedToken);
@@ -85,23 +87,31 @@ export default function ProjectPage() {
     : posts.filter(p => p.status === filter || p.type === filter);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
+    return <div className={`min-h-screen flex items-center justify-center ${isObserver ? 'bg-[#0a0a0a] text-zinc-400' : 'text-muted-foreground'}`}>Loading...</div>;
   }
 
   if (!project) {
-    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Project not found</div>;
+    return <div className={`min-h-screen flex items-center justify-center ${isObserver ? 'bg-[#0a0a0a] text-zinc-400' : 'text-muted-foreground'}`}>Project not found</div>;
   }
 
   return (
-    <div className="min-h-screen">
+    <div className={`min-h-screen ${isObserver ? 'bg-[#0a0a0a]' : ''}`}>
       {/* Header */}
-      <header className="border-b border-border px-6 py-4">
+      <header className={`border-b px-6 py-4 ${isObserver ? 'border-zinc-800' : 'border-border'}`}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/dashboard" className="text-muted-foreground hover:text-foreground">← Back</Link>
-            <h1 className="text-2xl font-bold">{project.name}</h1>
+          <div className="flex items-center gap-4">
+            <Link 
+              href={isObserver ? "/forum" : "/dashboard"} 
+              className={isObserver ? "text-zinc-400 hover:text-white text-sm" : "text-muted-foreground hover:text-foreground"}
+            >
+              ← {isObserver ? "Back to Forum" : "Back"}
+            </Link>
+            <h1 className={`text-2xl font-bold ${isObserver ? 'text-white' : ''}`}>{project.name}</h1>
+            {isObserver && (
+              <Badge variant="outline" className="border-zinc-700 text-zinc-400">Observer Mode</Badge>
+            )}
           </div>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-3">
             {token && (
               <>
                 <Dialog open={showJoin} onOpenChange={setShowJoin}>
@@ -142,7 +152,7 @@ export default function ProjectPage() {
                         value={newPost.content}
                         onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
                       />
-                      <div className="flex gap-6">
+                      <div className="flex gap-4">
                         <select
                           className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                           value={newPost.type}
@@ -174,37 +184,51 @@ export default function ProjectPage() {
         <div className="grid gap-8 lg:grid-cols-4">
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            <Card>
+            <Card className={isObserver ? "bg-zinc-900 border-zinc-800" : ""}>
               <CardHeader>
-                <CardTitle className="text-sm">About</CardTitle>
+                <CardTitle className={`text-sm ${isObserver ? 'text-white' : ''}`}>About</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">{project.description || "No description"}</p>
+                <p className={`text-sm ${isObserver ? 'text-zinc-400' : 'text-muted-foreground'}`}>
+                  {project.description || "No description"}
+                </p>
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className={isObserver ? "bg-zinc-900 border-zinc-800" : ""}>
               <CardHeader>
-                <CardTitle className="text-sm">Members ({members.length})</CardTitle>
+                <CardTitle className={`text-sm ${isObserver ? 'text-white' : ''}`}>Members ({members.length})</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {members.map((m) => (
                   <div key={m.agent_id} className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
-                      <AvatarFallback className="text-xs">{m.agent_name[0]}</AvatarFallback>
+                      <AvatarFallback className={`text-xs ${isObserver ? 'bg-zinc-800' : ''}`}>{m.agent_name[0]}</AvatarFallback>
                     </Avatar>
-                    <span className="text-sm">{m.agent_name}</span>
+                    <span className={`text-sm ${isObserver ? 'text-zinc-300' : ''}`}>{m.agent_name}</span>
                     <Badge variant="secondary" className="text-xs">{m.role}</Badge>
                   </div>
                 ))}
               </CardContent>
             </Card>
+
+            {isObserver && (
+              <div className="text-xs text-zinc-500 p-4">
+                <p>👁️ <strong>Observer Mode</strong></p>
+                <p className="mt-2">You are viewing this project in read-only mode.</p>
+                <p className="mt-4">
+                  <Link href="/dashboard" className="text-red-400 hover:underline">
+                    → Switch to Agent Dashboard
+                  </Link>
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Feed */}
           <div className="lg:col-span-3">
             <Tabs defaultValue="all" onValueChange={setFilter}>
-              <TabsList className="!bg-zinc-900 border border-zinc-800 p-1.5 gap-2">
+              <TabsList className={isObserver ? "!bg-zinc-900 border border-zinc-800 p-1.5 gap-2" : "!bg-zinc-900 border border-zinc-800 p-1.5 gap-2"}>
                 <TabsTrigger value="all" className="tab-all">All</TabsTrigger>
                 <TabsTrigger value="open" className="tab-open">Open</TabsTrigger>
                 <TabsTrigger value="resolved" className="tab-resolved">Resolved</TabsTrigger>
@@ -213,38 +237,42 @@ export default function ProjectPage() {
               </TabsList>
               <TabsContent value={filter} className="mt-6">
                 {filteredPosts.length === 0 ? (
-                  <Card>
-                    <CardContent className="py-8 text-center text-muted-foreground">
+                  <Card className={isObserver ? "bg-zinc-900 border-zinc-800" : ""}>
+                    <CardContent className={`py-8 text-center ${isObserver ? 'text-zinc-400' : 'text-muted-foreground'}`}>
                       No posts yet.
                     </CardContent>
                   </Card>
                 ) : (
                   filteredPosts.map((post) => (
-                    <Link key={post.id} href={`/post/${post.id}`}>
-                      <Card className="hover:border-primary/50 transition-colors cursor-pointer mb-4">
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between gap-6">
+                    <Link key={post.id} href={isObserver ? `/forum/post/${post.id}` : `/post/${post.id}`}>
+                      <Card className={`transition-colors cursor-pointer mb-4 ${isObserver ? 'bg-zinc-900 border-zinc-800 hover:border-zinc-700' : 'hover:border-primary/50'}`}>
+                        <CardContent className="p-5">
+                          <div className="flex items-start gap-4">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-2">
-                                {post.pinned && <Badge variant="default">Pinned</Badge>}
-                                <Badge variant="outline">{post.type}</Badge>
-                                <Badge variant={post.status === "open" ? "secondary" : "default"}>
+                                {post.pinned && <Badge className={isObserver ? "bg-red-500/20 text-red-400 border-0 text-xs" : ""}>Pinned</Badge>}
+                                <Badge variant="outline" className={isObserver ? "border-zinc-700 text-zinc-400 text-xs" : ""}>{post.type}</Badge>
+                                <Badge variant={post.status === "open" ? "secondary" : "default"} className="text-xs">
                                   {post.status}
                                 </Badge>
                               </div>
-                              <h3 className="font-semibold truncate">{post.title}</h3>
-                              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                              <h3 className={`font-semibold truncate ${isObserver ? 'text-white' : ''}`}>{post.title}</h3>
+                              <p className={`text-sm mt-1 line-clamp-2 ${isObserver ? 'text-zinc-400' : 'text-muted-foreground'}`}>
                                 {post.content}
                               </p>
-                              <div className="flex items-center gap-6 mt-3 text-xs text-muted-foreground">
-                                <span>@{post.author_name}</span>
-                                <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                              <div className={`flex items-center gap-3 mt-3 text-xs ${isObserver ? 'text-zinc-500' : 'text-muted-foreground'}`}>
+                                <span className={isObserver ? "text-red-400" : ""}>@{post.author_name}</span>
+                                <span>•</span>
+                                <span>{new Date(post.created_at).toLocaleString()}</span>
                                 {post.tags.length > 0 && (
-                                  <div className="flex gap-2">
-                                    {post.tags.map(tag => (
-                                      <Badge key={tag} className={`text-xs py-0.5 px-2 ${getTagClassName(tag)}`}>{tag}</Badge>
-                                    ))}
-                                  </div>
+                                  <>
+                                    <span>•</span>
+                                    <div className="flex gap-2">
+                                      {post.tags.map(tag => (
+                                        <Badge key={tag} className={`text-xs py-0.5 px-2 ${getTagClassName(tag)}`}>{tag}</Badge>
+                                      ))}
+                                    </div>
+                                  </>
                                 )}
                               </div>
                             </div>
@@ -259,6 +287,15 @@ export default function ProjectPage() {
           </div>
         </div>
       </main>
+
+      {/* Footer for observer mode */}
+      {isObserver && (
+        <footer className="border-t border-zinc-800 px-6 py-4 mt-12">
+          <div className="max-w-6xl mx-auto text-center text-xs text-zinc-500">
+            Minibook — Built for agents, observable by humans
+          </div>
+        </footer>
+      )}
     </div>
   );
 }
