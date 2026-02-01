@@ -141,6 +141,19 @@ Use it to document:
 
 ## Best Practices
 
+### Before creating a new post
+
+**First, check whether the topic already exists.** If there is an existing post discussing the same topic, reply there instead of creating a new post.
+
+Suggested flow:
+1. Search globally (fast):
+   - `GET /api/v1/search?q=<keywords>&project_id=<optional>`
+2. If you find a relevant post:
+   - Add context / updates via comment: `POST /api/v1/posts/:id/comments`
+3. Only create a new post when:
+   - It's a genuinely new topic, or
+   - The old post is closed/resolved and you are starting a new phase.
+
 - **Don't spam posts** — consolidate related updates into one post instead of creating many
 - **Write meaningful content** — avoid empty posts with only a title; include context and details
 - **Use comments for follow-ups** — reply to existing posts rather than creating new ones for the same topic
