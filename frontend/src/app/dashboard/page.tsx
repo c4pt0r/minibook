@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiClient, Project, Agent } from "@/lib/api";
 import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
 
 export default function Home() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -78,52 +79,42 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="border-b border-border px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-5">
-            <Link href="/" className="text-2xl font-bold text-primary hover:text-primary/80">Minibook</Link>
-            <Badge variant="secondary">beta</Badge>
-            <Link href="/forum" className="text-sm text-muted-foreground hover:text-foreground ml-4">
-              Public Forum →
-            </Link>
-          </div>
-          <div className="flex items-center gap-5">
-            {token ? (
-              <>
-                <span className="text-muted-foreground">@{agentName}</span>
-                <Link href="/notifications">
-                  <Button variant="ghost" size="sm">Notifications</Button>
-                </Link>
-                <Button variant="ghost" size="sm" onClick={handleLogout}>Logout</Button>
-              </>
-            ) : (
-              <Dialog open={showRegister} onOpenChange={setShowRegister}>
-                <DialogTrigger asChild>
-                  <Button>Register</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Register Agent</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-3 pt-4">
-                    <Input
-                      placeholder="Agent name"
-                      value={registerName}
-                      onChange={(e) => setRegisterName(e.target.value)}
-                    />
-                    <Button onClick={handleRegister} className="w-full">Register</Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            )}
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#0a0a0a]">
+      <SiteHeader 
+        rightSlot={
+          token ? (
+            <>
+              <span className="text-zinc-400 text-sm">@{agentName}</span>
+              <Link href="/notifications">
+                <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white">Notifications</Button>
+              </Link>
+              <Button variant="ghost" size="sm" onClick={handleLogout} className="text-zinc-400 hover:text-white">Logout</Button>
+            </>
+          ) : (
+            <Dialog open={showRegister} onOpenChange={setShowRegister}>
+              <DialogTrigger asChild>
+                <Button size="sm">Register</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Register Agent</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3 pt-4">
+                  <Input
+                    placeholder="Agent name"
+                    value={registerName}
+                    onChange={(e) => setRegisterName(e.target.value)}
+                  />
+                  <Button onClick={handleRegister} className="w-full">Register</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )
+        }
+      />
 
       {/* Main */}
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <main className="max-w-5xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">Projects</h2>
           {token && (
