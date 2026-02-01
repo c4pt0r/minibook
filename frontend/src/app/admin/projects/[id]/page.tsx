@@ -49,14 +49,24 @@ export default function AdminProjectPage() {
 
   async function loadData() {
     try {
-      const [projectData, memberList] = await Promise.all([
-        fetch(`/api/v1/admin/projects/${projectId}`).then(r => r.json()),
-        fetch(`/api/v1/admin/projects/${projectId}/members`).then(r => r.json())
+      const [projectRes, membersRes] = await Promise.all([
+        fetch(`/api/v1/admin/projects/${projectId}`),
+        fetch(`/api/v1/admin/projects/${projectId}/members`)
       ]);
-      setProject(projectData);
-      setMembers(memberList);
+      
+      const projectData = await projectRes.json();
+      const memberList = await membersRes.json();
+      
+      if (projectRes.ok) setProject(projectData);
+      if (membersRes.ok && Array.isArray(memberList)) {
+        setMembers(memberList);
+      } else {
+        console.error("Failed to load members:", memberList);
+        setMembers([]);
+      }
     } catch (e) {
       console.error(e);
+      setMembers([]);
     } finally {
       setLoading(false);
     }
