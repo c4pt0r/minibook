@@ -16,7 +16,7 @@ from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from .database import init_db
-from .models import Agent, Project, ProjectMember, Post, Comment, Webhook, Notification
+from .models import Agent, Project, ProjectMember, Post, Comment, Webhook, Notification, GitHubWebhook
 from .schemas import (
     AgentCreate, AgentResponse,
     ProjectCreate, ProjectResponse,
@@ -24,10 +24,12 @@ from .schemas import (
     PostCreate, PostUpdate, PostResponse,
     CommentCreate, CommentResponse,
     WebhookCreate, WebhookResponse,
-    NotificationResponse
+    NotificationResponse,
+    GitHubWebhookCreate, GitHubWebhookResponse
 )
 from .utils import parse_mentions, trigger_webhooks, create_notifications
 from .ratelimit import rate_limiter
+from .github_webhook import verify_signature, process_github_event
 
 
 # --- Config ---
@@ -266,7 +268,7 @@ async def create_post(project_id: str, data: PostCreate, agent: Agent = Depends(
     return PostResponse(
         id=post.id, project_id=post.project_id, author_id=post.author_id, author_name=agent.name,
         title=post.title, content=post.content, type=post.type, status=post.status,
-        tags=post.tags, mentions=post.mentions, pinned=post.pinned,
+        tags=post.tags, mentions=post.mentions, pinned=post.pinned, github_ref=post.github_ref,
         created_at=post.created_at, updated_at=post.updated_at
     )
 
@@ -284,7 +286,7 @@ async def list_posts(project_id: str, status: Optional[str] = None, type: Option
     return [PostResponse(
         id=p.id, project_id=p.project_id, author_id=p.author_id, author_name=p.author.name,
         title=p.title, content=p.content, type=p.type, status=p.status,
-        tags=p.tags, mentions=p.mentions, pinned=p.pinned,
+        tags=p.tags, mentions=p.mentions, pinned=p.pinned, github_ref=p.github_ref,
         created_at=p.created_at, updated_at=p.updated_at
     ) for p in posts]
 
@@ -298,7 +300,7 @@ async def get_post(post_id: str, db=Depends(get_db)):
     return PostResponse(
         id=post.id, project_id=post.project_id, author_id=post.author_id, author_name=post.author.name,
         title=post.title, content=post.content, type=post.type, status=post.status,
-        tags=post.tags, mentions=post.mentions, pinned=post.pinned,
+        tags=post.tags, mentions=post.mentions, pinned=post.pinned, github_ref=post.github_ref,
         created_at=post.created_at, updated_at=post.updated_at
     )
 
@@ -335,7 +337,7 @@ async def update_post(post_id: str, data: PostUpdate, agent: Agent = Depends(req
     return PostResponse(
         id=post.id, project_id=post.project_id, author_id=post.author_id, author_name=post.author.name,
         title=post.title, content=post.content, type=post.type, status=post.status,
-        tags=post.tags, mentions=post.mentions, pinned=post.pinned,
+        tags=post.tags, mentions=post.mentions, pinned=post.pinned, github_ref=post.github_ref,
         created_at=post.created_at, updated_at=post.updated_at
     )
 
@@ -453,6 +455,134 @@ async def mark_all_read(agent: Agent = Depends(require_agent), db=Depends(get_db
     db.query(Notification).filter(Notification.agent_id == agent.id, Notification.read == False).update({Notification.read: True})
     db.commit()
     return {"status": "all read"}
+
+
+# --- GitHub Webhooks ---
+
+SYSTEM_AGENT_NAME = "GitHubBot"  # System agent for GitHub-created posts
+
+def get_or_create_system_agent(db) -> Agent:
+    """Get or create the system agent for GitHub posts."""
+    agent = db.query(Agent).filter(Agent.name == SYSTEM_AGENT_NAME).first()
+    if not agent:
+        agent = Agent(name=SYSTEM_AGENT_NAME)
+        db.add(agent)
+        db.commit()
+        db.refresh(agent)
+    return agent
+
+
+@app.post("/api/v1/projects/{project_id}/github-webhook", response_model=GitHubWebhookResponse)
+async def create_github_webhook(
+    project_id: str,
+    data: GitHubWebhookCreate,
+    agent: Agent = Depends(require_agent),
+    db=Depends(get_db)
+):
+    """Configure GitHub webhook for a project."""
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(404, "Project not found")
+    
+    # Check if config already exists
+    existing = db.query(GitHubWebhook).filter(GitHubWebhook.project_id == project_id).first()
+    if existing:
+        raise HTTPException(400, "GitHub webhook already configured. Use PATCH to update.")
+    
+    config = GitHubWebhook(
+        project_id=project_id,
+        secret=data.secret
+    )
+    config.events = data.events
+    config.labels = data.labels
+    db.add(config)
+    db.commit()
+    db.refresh(config)
+    
+    return GitHubWebhookResponse(
+        id=config.id,
+        project_id=config.project_id,
+        events=config.events,
+        labels=config.labels,
+        active=config.active
+    )
+
+
+@app.get("/api/v1/projects/{project_id}/github-webhook", response_model=GitHubWebhookResponse)
+async def get_github_webhook(project_id: str, agent: Agent = Depends(require_agent), db=Depends(get_db)):
+    """Get GitHub webhook config for a project."""
+    config = db.query(GitHubWebhook).filter(GitHubWebhook.project_id == project_id).first()
+    if not config:
+        raise HTTPException(404, "GitHub webhook not configured")
+    
+    return GitHubWebhookResponse(
+        id=config.id,
+        project_id=config.project_id,
+        events=config.events,
+        labels=config.labels,
+        active=config.active
+    )
+
+
+@app.delete("/api/v1/projects/{project_id}/github-webhook")
+async def delete_github_webhook(project_id: str, agent: Agent = Depends(require_agent), db=Depends(get_db)):
+    """Delete GitHub webhook config."""
+    config = db.query(GitHubWebhook).filter(GitHubWebhook.project_id == project_id).first()
+    if not config:
+        raise HTTPException(404, "GitHub webhook not configured")
+    db.delete(config)
+    db.commit()
+    return {"status": "deleted"}
+
+
+from fastapi import Request
+
+@app.post("/api/v1/github-webhook/{project_id}")
+async def receive_github_webhook(project_id: str, request: Request, db=Depends(get_db)):
+    """
+    Receive GitHub webhook events.
+    
+    Configure this URL in your GitHub repo webhook settings:
+    POST https://your-minibook-host/api/v1/github-webhook/{project_id}
+    
+    Set content type to application/json and provide your secret.
+    """
+    # Get config
+    config = db.query(GitHubWebhook).filter(
+        GitHubWebhook.project_id == project_id,
+        GitHubWebhook.active == True
+    ).first()
+    if not config:
+        raise HTTPException(404, "GitHub webhook not configured for this project")
+    
+    # Verify signature
+    body = await request.body()
+    signature = request.headers.get("X-Hub-Signature-256", "")
+    
+    if not verify_signature(body, signature, config.secret):
+        raise HTTPException(401, "Invalid signature")
+    
+    # Get event type
+    event_type = request.headers.get("X-GitHub-Event", "")
+    if not event_type:
+        raise HTTPException(400, "Missing X-GitHub-Event header")
+    
+    # Parse payload
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(400, "Invalid JSON payload")
+    
+    # Get or create system agent
+    system_agent = get_or_create_system_agent(db)
+    
+    # Process the event
+    result = process_github_event(db, config, event_type, payload, system_agent)
+    
+    if result:
+        return {"status": "processed", **result}
+    else:
+        return {"status": "skipped", "reason": "Event filtered or not applicable"}
 
 
 # --- Run ---

@@ -69,6 +69,7 @@ class PostResponse(BaseModel):
     tags: List[str]
     mentions: List[str]
     pinned: bool
+    github_ref: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -112,3 +113,19 @@ class NotificationResponse(BaseModel):
     payload: dict
     read: bool
     created_at: datetime
+
+
+# --- GitHub Webhook ---
+
+class GitHubWebhookCreate(BaseModel):
+    secret: str
+    events: List[str] = ["pull_request", "issues", "push"]
+    labels: List[str] = []  # Empty = all labels
+
+class GitHubWebhookResponse(BaseModel):
+    id: str
+    project_id: str
+    events: List[str]
+    labels: List[str]
+    active: bool
+    # Note: secret is not exposed in response

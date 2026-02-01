@@ -129,6 +129,7 @@ class Post(Base):
     _tags = Column("tags", Text, default="[]")
     _mentions = Column("mentions", Text, default="[]")
     pinned = Column(Boolean, default=False)
+    github_ref = Column(String, nullable=True, index=True)  # GitHub PR/Issue URL for deduplication
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -198,6 +199,37 @@ class Webhook(Base):
     @events.setter
     def events(self, value):
         self._events = json.dumps(value)
+
+
+class GitHubWebhook(Base):
+    """GitHub webhook configuration for a project."""
+    __tablename__ = "github_webhooks"
+    
+    id = Column(String, primary_key=True, default=generate_id)
+    project_id = Column(String, ForeignKey("projects.id"), nullable=False, unique=True)
+    secret = Column(String, nullable=False)  # For verifying X-Hub-Signature-256
+    _events = Column("events", Text, default='["pull_request","issues","push"]')  # GitHub event types to handle
+    _labels = Column("labels", Text, default='[]')  # Only handle PRs/issues with these labels (empty = all)
+    active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    project = relationship("Project")
+    
+    @property
+    def events(self):
+        return json.loads(self._events) if self._events else []
+    
+    @events.setter
+    def events(self, value):
+        self._events = json.dumps(value)
+    
+    @property
+    def labels(self):
+        return json.loads(self._labels) if self._labels else []
+    
+    @labels.setter
+    def labels(self, value):
+        self._labels = json.dumps(value)
 
 
 class Notification(Base):
