@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { SiteHeader } from "@/components/site-header";
 import { apiClient, Project } from "@/lib/api";
 
@@ -28,6 +29,13 @@ interface ProjectWithLead {
   created_at: string;
 }
 
+interface Plan {
+  id: string;
+  title: string;
+  content: string;
+  updated_at: string;
+}
+
 // TODO: Re-enable for production
 const ADMIN_TOKEN = ""; // Skip auth for now
 
@@ -37,11 +45,16 @@ export default function AdminProjectPage() {
 
   const [project, setProject] = useState<ProjectWithLead | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
+  const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingMember, setEditingMember] = useState<string | null>(null);
   const [editRole, setEditRole] = useState("");
   const [saving, setSaving] = useState(false);
   const [settingLead, setSettingLead] = useState(false);
+  const [editingPlan, setEditingPlan] = useState(false);
+  const [planTitle, setPlanTitle] = useState("");
+  const [planContent, setPlanContent] = useState("");
+  const [savingPlan, setSavingPlan] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -49,9 +62,10 @@ export default function AdminProjectPage() {
 
   async function loadData() {
     try {
-      const [projectRes, membersRes] = await Promise.all([
+      const [projectRes, membersRes, planRes] = await Promise.all([
         fetch(`/api/v1/admin/projects/${projectId}`),
-        fetch(`/api/v1/admin/projects/${projectId}/members`)
+        fetch(`/api/v1/admin/projects/${projectId}/members`),
+        fetch(`/api/v1/projects/${projectId}/plan`)
       ]);
       
       const projectData = await projectRes.json();
@@ -63,6 +77,13 @@ export default function AdminProjectPage() {
       } else {
         console.error("Failed to load members:", memberList);
         setMembers([]);
+      }
+      
+      if (planRes.ok) {
+        const planData = await planRes.json();
+        setPlan(planData);
+        setPlanTitle(planData.title);
+        setPlanContent(planData.content);
       }
     } catch (e) {
       console.error(e);
@@ -138,6 +159,29 @@ export default function AdminProjectPage() {
     }
   }
 
+  async function savePlan() {
+    setSavingPlan(true);
+    try {
+      const params = new URLSearchParams({ title: planTitle, content: planContent });
+      const res = await fetch(`/api/v1/projects/${projectId}/plan?${params}`, {
+        method: "PUT"
+      });
+      
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Failed to save plan");
+      }
+
+      const updated = await res.json();
+      setPlan(updated);
+      setEditingPlan(false);
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : "Failed to save plan");
+    } finally {
+      setSavingPlan(false);
+    }
+  }
+
   const suggestedRoles = ["Lead", "Developer", "Reviewer", "Security", "DevOps", "Tester", "Observer"];
 
   return (
@@ -171,6 +215,84 @@ export default function AdminProjectPage() {
 
       {/* Main */}
       <main className="max-w-5xl mx-auto px-6 py-8">
+        {/* Grand Plan Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white">📋 Grand Plan</h2>
+            {!editingPlan && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setEditingPlan(true)}
+                className="text-zinc-400 hover:text-white"
+              >
+                {plan ? "Edit" : "Create"}
+              </Button>
+            )}
+          </div>
+
+          {editingPlan ? (
+            <Card className="bg-zinc-900 border-zinc-800">
+              <CardContent className="p-4 space-y-4">
+                <Input
+                  value={planTitle}
+                  onChange={(e) => setPlanTitle(e.target.value)}
+                  placeholder="Plan title"
+                  className="bg-zinc-800 border-zinc-700"
+                />
+                <Textarea
+                  value={planContent}
+                  onChange={(e) => setPlanContent(e.target.value)}
+                  placeholder="Roadmap, goals, priorities..."
+                  rows={8}
+                  className="bg-zinc-800 border-zinc-700 font-mono text-sm"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setEditingPlan(false);
+                      setPlanTitle(plan?.title || "");
+                      setPlanContent(plan?.content || "");
+                    }}
+                    className="text-zinc-400"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={savePlan}
+                    disabled={savingPlan}
+                    className="bg-red-500 hover:bg-red-600"
+                  >
+                    {savingPlan ? "Saving..." : "Save Plan"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : plan ? (
+            <Card className="bg-zinc-900 border-zinc-800">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-base">{plan.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="text-sm text-zinc-300 whitespace-pre-wrap font-mono">{plan.content}</pre>
+                <p className="text-xs text-zinc-500 mt-4">
+                  Updated: {new Date(plan.updated_at).toLocaleString()}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="bg-zinc-900 border-zinc-800 border-dashed">
+              <CardContent className="py-8 text-center text-zinc-500">
+                No Grand Plan yet. Click "Create" to add one.
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Members Section */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-white">Members ({members.length})</h2>
         </div>

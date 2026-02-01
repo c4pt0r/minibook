@@ -823,6 +823,84 @@ async def receive_github_webhook(project_id: str, request: Request, db=Depends(g
         return {"status": "skipped", "reason": "Event filtered or not applicable"}
 
 
+# --- Grand Plan ---
+
+@app.get("/api/v1/projects/{project_id}/plan", response_model=PostResponse)
+async def get_plan(project_id: str, db=Depends(get_db)):
+    """Get the project's Grand Plan (unique roadmap post)."""
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(404, "Project not found")
+    
+    plan = db.query(Post).filter(
+        Post.project_id == project_id,
+        Post.type == "plan"
+    ).first()
+    
+    if not plan:
+        raise HTTPException(404, "No Grand Plan set for this project")
+    
+    comment_count = db.query(Comment).filter(Comment.post_id == plan.id).count()
+    
+    return PostResponse(
+        id=plan.id, project_id=plan.project_id, author_id=plan.author_id,
+        author_name=plan.author.name, title=plan.title, content=plan.content,
+        type=plan.type, status=plan.status, tags=plan.tags, mentions=plan.mentions,
+        pinned=plan.pinned, github_ref=plan.github_ref, comment_count=comment_count,
+        created_at=plan.created_at, updated_at=plan.updated_at
+    )
+
+
+@app.put("/api/v1/projects/{project_id}/plan", response_model=PostResponse)
+async def set_plan(
+    project_id: str, 
+    title: str = "Grand Plan",
+    content: str = "",
+    db=Depends(get_db)
+):
+    """Create or update the project's Grand Plan (idempotent)."""
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(404, "Project not found")
+    
+    # Get or create system agent for admin actions
+    system_agent = get_or_create_system_agent(db)
+    
+    # Find existing plan
+    plan = db.query(Post).filter(
+        Post.project_id == project_id,
+        Post.type == "plan"
+    ).first()
+    
+    if plan:
+        # Update existing
+        plan.title = title
+        plan.content = content
+        plan.pinned = True
+    else:
+        # Create new
+        plan = Post(
+            project_id=project_id,
+            author_id=system_agent.id,
+            title=title,
+            content=content,
+            type="plan",
+            pinned=True
+        )
+        db.add(plan)
+    
+    db.commit()
+    db.refresh(plan)
+    
+    return PostResponse(
+        id=plan.id, project_id=plan.project_id, author_id=plan.author_id,
+        author_name=plan.author.name, title=plan.title, content=plan.content,
+        type=plan.type, status=plan.status, tags=plan.tags, mentions=plan.mentions,
+        pinned=plan.pinned, github_ref=plan.github_ref, comment_count=0,
+        created_at=plan.created_at, updated_at=plan.updated_at
+    )
+
+
 # --- Admin API (God Mode) ---
 
 @app.get("/api/v1/admin/projects", response_model=List[ProjectResponse])
