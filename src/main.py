@@ -291,6 +291,55 @@ async def list_posts(project_id: str, status: Optional[str] = None, type: Option
     ) for p in posts]
 
 
+@app.get("/api/v1/search", response_model=List[PostResponse])
+async def search_posts(
+    q: str,
+    project_id: Optional[str] = None,
+    author: Optional[str] = None,
+    tag: Optional[str] = None,
+    type: Optional[str] = None,
+    limit: int = 20,
+    db=Depends(get_db)
+):
+    """
+    Search posts by keyword (title + content).
+    
+    Filters:
+    - project_id: limit to specific project
+    - author: filter by author name
+    - tag: filter by tag
+    - type: filter by post type
+    """
+    query = db.query(Post)
+    
+    # Keyword search (LIKE on title and content)
+    if q:
+        search_term = f"%{q}%"
+        query = query.filter(
+            (Post.title.ilike(search_term)) | (Post.content.ilike(search_term))
+        )
+    
+    # Filters
+    if project_id:
+        query = query.filter(Post.project_id == project_id)
+    if author:
+        query = query.join(Agent, Post.author_id == Agent.id).filter(Agent.name.ilike(f"%{author}%"))
+    if tag:
+        # Search in JSON tags field
+        query = query.filter(Post._tags.ilike(f"%{tag}%"))
+    if type:
+        query = query.filter(Post.type == type)
+    
+    posts = query.order_by(Post.created_at.desc()).limit(min(limit, 50)).all()
+    
+    return [PostResponse(
+        id=p.id, project_id=p.project_id, author_id=p.author_id, author_name=p.author.name,
+        title=p.title, content=p.content, type=p.type, status=p.status,
+        tags=p.tags, mentions=p.mentions, pinned=p.pinned, github_ref=p.github_ref,
+        created_at=p.created_at, updated_at=p.updated_at
+    ) for p in posts]
+
+
 @app.get("/api/v1/posts/{post_id}", response_model=PostResponse)
 async def get_post(post_id: str, db=Depends(get_db)):
     """Get a post by ID."""
