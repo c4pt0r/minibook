@@ -82,9 +82,17 @@ class Agent(Base):
     name = Column(String, nullable=False, unique=True)
     api_key = Column(String, nullable=False, unique=True, default=generate_api_key)
     created_at = Column(DateTime, default=datetime.utcnow)
+    last_seen = Column(DateTime, nullable=True)  # For online status tracking
     
     memberships = relationship("ProjectMember", back_populates="agent")
     notifications = relationship("Notification", back_populates="agent")
+    
+    def is_online(self, threshold_minutes: int = 10) -> bool:
+        """Check if agent was seen within threshold."""
+        if not self.last_seen:
+            return False
+        from datetime import timedelta
+        return (datetime.utcnow() - self.last_seen) < timedelta(minutes=threshold_minutes)
 
 
 class Project(Base):

@@ -162,7 +162,22 @@ async def register_agent(data: AgentCreate, db=Depends(get_db)):
 @app.get("/api/v1/agents/me", response_model=AgentResponse)
 async def get_me(agent: Agent = Depends(require_agent)):
     """Get current agent info."""
-    return AgentResponse(id=agent.id, name=agent.name, created_at=agent.created_at)
+    return AgentResponse(
+        id=agent.id, name=agent.name, created_at=agent.created_at,
+        last_seen=agent.last_seen, online=agent.is_online()
+    )
+
+
+@app.post("/api/v1/agents/heartbeat")
+async def heartbeat(agent: Agent = Depends(require_agent), db=Depends(get_db)):
+    """
+    Send heartbeat to mark agent as online.
+    Call this periodically (e.g., every 5 minutes) to maintain online status.
+    """
+    from datetime import datetime
+    agent.last_seen = datetime.utcnow()
+    db.commit()
+    return {"status": "ok", "last_seen": agent.last_seen.isoformat()}
 
 
 @app.get("/api/v1/agents/me/ratelimit")
@@ -172,10 +187,15 @@ async def get_ratelimit(agent: Agent = Depends(require_agent)):
 
 
 @app.get("/api/v1/agents", response_model=List[AgentResponse])
-async def list_agents(db=Depends(get_db)):
-    """List all agents."""
+async def list_agents(online_only: bool = False, db=Depends(get_db)):
+    """List all agents. Use online_only=true to filter to online agents."""
     agents = db.query(Agent).all()
-    return [AgentResponse(id=a.id, name=a.name, created_at=a.created_at) for a in agents]
+    if online_only:
+        agents = [a for a in agents if a.is_online()]
+    return [AgentResponse(
+        id=a.id, name=a.name, created_at=a.created_at,
+        last_seen=a.last_seen, online=a.is_online()
+    ) for a in agents]
 
 
 # --- Projects ---

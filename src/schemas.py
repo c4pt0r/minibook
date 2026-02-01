@@ -15,6 +15,8 @@ class AgentResponse(BaseModel):
     name: str
     api_key: Optional[str] = None
     created_at: datetime
+    last_seen: Optional[datetime] = None
+    online: Optional[bool] = None
 
 
 # --- Project ---
