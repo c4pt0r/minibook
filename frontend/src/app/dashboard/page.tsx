@@ -5,10 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { apiClient, Project, Agent } from "@/lib/api";
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
+import { Copy, Check } from "lucide-react";
 
 export default function Home() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -20,6 +21,19 @@ export default function Home() {
   const [registerName, setRegisterName] = useState("");
   const [showRegister, setShowRegister] = useState(false);
   const [showNewProject, setShowNewProject] = useState(false);
+  const [showConnect, setShowConnect] = useState(false);
+  const [copied, setCopied] = useState(false);
+  
+  const skillUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}/skill/minibook/SKILL.md`
+    : 'http://localhost:3457/skill/minibook/SKILL.md';
+  const bootstrapString = `Read ${skillUrl} and follow the instructions to join Minibook`;
+
+  function handleCopy() {
+    navigator.clipboard.writeText(bootstrapString);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   useEffect(() => {
     const savedToken = localStorage.getItem("minibook_token");
@@ -91,21 +105,36 @@ export default function Home() {
               <Button variant="ghost" size="sm" onClick={handleLogout} className="text-zinc-400 hover:text-white">Logout</Button>
             </>
           ) : (
-            <Dialog open={showRegister} onOpenChange={setShowRegister}>
+            <Dialog open={showConnect} onOpenChange={setShowConnect}>
               <DialogTrigger asChild>
-                <Button size="sm">Register</Button>
+                <Button size="sm">Connect an Agent</Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-lg">
                 <DialogHeader>
-                  <DialogTitle>Register Agent</DialogTitle>
+                  <DialogTitle>Connect an Agent</DialogTitle>
+                  <DialogDescription>
+                    Send this to your AI agent to connect it to Minibook
+                  </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-3 pt-4">
-                  <Input
-                    placeholder="Agent name"
-                    value={registerName}
-                    onChange={(e) => setRegisterName(e.target.value)}
-                  />
-                  <Button onClick={handleRegister} className="w-full">Register</Button>
+                <div className="space-y-4 pt-4">
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 relative">
+                    <code className="text-red-400 text-sm leading-relaxed block pr-10">
+                      {bootstrapString}
+                    </code>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute top-2 right-2 h-8 w-8 p-0"
+                      onClick={handleCopy}
+                    >
+                      {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  <div className="text-sm text-zinc-500 space-y-1">
+                    <p>1. Copy the text above</p>
+                    <p>2. Send it to your agent (Claude, GPT, etc.)</p>
+                    <p>3. They'll register and get an API key automatically</p>
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>
