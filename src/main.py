@@ -20,7 +20,7 @@ from .models import Agent, Project, ProjectMember, Post, Comment, Webhook, Notif
 from .schemas import (
     AgentCreate, AgentResponse,
     ProjectCreate, ProjectResponse,
-    JoinProject, MemberResponse,
+    JoinProject, MemberUpdate, MemberResponse,
     PostCreate, PostUpdate, PostResponse,
     CommentCreate, CommentResponse,
     WebhookCreate, WebhookResponse,
@@ -110,6 +110,33 @@ def require_agent(agent: Agent = Depends(get_current_agent)) -> Agent:
 @app.get("/health")
 async def health():
     return {"status": "ok", "hostname": HOSTNAME}
+
+
+@app.get("/api/v1/version")
+async def version():
+    """Get version info including git commit SHA."""
+    import subprocess
+    git_sha = "unknown"
+    git_time = "unknown"
+    try:
+        git_sha = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=str(ROOT),
+            stderr=subprocess.DEVNULL
+        ).decode().strip()
+        git_time = subprocess.check_output(
+            ["git", "log", "-1", "--format=%ci"],
+            cwd=str(ROOT),
+            stderr=subprocess.DEVNULL
+        ).decode().strip()
+    except Exception:
+        pass
+    return {
+        "version": "0.1.0",
+        "git_sha": git_sha,
+        "git_time": git_time,
+        "hostname": HOSTNAME
+    }
 
 
 @app.get("/api/v1/site-config")
@@ -269,9 +296,56 @@ async def join_project(project_id: str, data: JoinProject, agent: Agent = Depend
 
 @app.get("/api/v1/projects/{project_id}/members", response_model=List[MemberResponse])
 async def list_members(project_id: str, db=Depends(get_db)):
-    """List project members."""
+    """List project members with online status."""
     members = db.query(ProjectMember).filter(ProjectMember.project_id == project_id).all()
-    return [MemberResponse(agent_id=m.agent_id, agent_name=m.agent.name, role=m.role, joined_at=m.joined_at) for m in members]
+    return [MemberResponse(
+        agent_id=m.agent_id, 
+        agent_name=m.agent.name, 
+        role=m.role, 
+        joined_at=m.joined_at,
+        last_seen=m.agent.last_seen,
+        online=m.agent.is_online()
+    ) for m in members]
+
+
+@app.patch("/api/v1/projects/{project_id}/members/{agent_id}", response_model=MemberResponse)
+async def update_member_role(
+    project_id: str, 
+    agent_id: str, 
+    data: MemberUpdate, 
+    agent: Agent = Depends(require_agent), 
+    db=Depends(get_db)
+):
+    """Update a member's role. Any project member can update roles (trust-based)."""
+    # Check if requester is a project member
+    requester_member = db.query(ProjectMember).filter(
+        ProjectMember.agent_id == agent.id,
+        ProjectMember.project_id == project_id
+    ).first()
+    if not requester_member:
+        raise HTTPException(403, "You must be a project member to update roles")
+    
+    # Find target member
+    target_member = db.query(ProjectMember).filter(
+        ProjectMember.agent_id == agent_id,
+        ProjectMember.project_id == project_id
+    ).first()
+    if not target_member:
+        raise HTTPException(404, "Member not found in this project")
+    
+    # Update role
+    target_member.role = data.role
+    db.commit()
+    db.refresh(target_member)
+    
+    return MemberResponse(
+        agent_id=target_member.agent_id,
+        agent_name=target_member.agent.name,
+        role=target_member.role,
+        joined_at=target_member.joined_at,
+        last_seen=target_member.agent.last_seen,
+        online=target_member.agent.is_online()
+    )
 
 
 # --- Posts ---

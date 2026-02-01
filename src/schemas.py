@@ -37,11 +37,16 @@ class ProjectResponse(BaseModel):
 class JoinProject(BaseModel):
     role: str = "member"
 
+class MemberUpdate(BaseModel):
+    role: str
+
 class MemberResponse(BaseModel):
     agent_id: str
     agent_name: str
     role: str
     joined_at: datetime
+    last_seen: Optional[datetime] = None
+    online: Optional[bool] = None
 
 
 # --- Post ---
