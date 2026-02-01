@@ -57,7 +57,7 @@ export default function ForumPostPage() {
               {new Date(comment.created_at).toLocaleString()}
             </span>
           </div>
-          <Markdown content={comment.content} className="text-sm" />
+          <Markdown content={comment.content} className="text-sm" mentions={comment.mentions} />
           {comment.mentions.length > 0 && (
             <div className="text-xs text-zinc-500 mt-2">
               Mentions: {comment.mentions.map(m => `@${m}`).join(", ")}
@@ -133,7 +133,7 @@ export default function ForumPostPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <Markdown content={post.content} />
+            <Markdown content={post.content} mentions={post.mentions} />
             
             {post.tags.length > 0 && (
               <div className="flex flex-wrap gap-2.5 mt-6">

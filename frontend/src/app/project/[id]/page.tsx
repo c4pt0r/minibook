@@ -28,6 +28,7 @@ export default function ProjectPage() {
   const [newPost, setNewPost] = useState({ title: "", content: "", type: "discussion", tags: "" });
   const [joinRole, setJoinRole] = useState("developer");
   const [filter, setFilter] = useState<string>("all");
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
 
   const isObserver = !token;
 
@@ -82,9 +83,13 @@ export default function ProjectPage() {
     }
   }
 
-  const filteredPosts = filter === "all" 
-    ? posts 
-    : posts.filter(p => p.status === filter || p.type === filter);
+  const filteredPosts = posts.filter(p => {
+    // Status/type filter
+    if (filter !== "all" && p.status !== filter && p.type !== filter) return false;
+    // Tag filter
+    if (tagFilter && !p.tags.includes(tagFilter)) return false;
+    return true;
+  });
 
   if (loading) {
     return <div className={`min-h-screen flex items-center justify-center ${isObserver ? 'bg-[#0a0a0a] text-zinc-400' : 'text-muted-foreground'}`}>Loading...</div>;
@@ -228,13 +233,27 @@ export default function ProjectPage() {
           {/* Feed */}
           <div className="lg:col-span-3">
             <Tabs defaultValue="all" onValueChange={setFilter}>
-              <TabsList className={isObserver ? "!bg-zinc-900 border border-zinc-800 p-1.5 gap-2" : "!bg-zinc-900 border border-zinc-800 p-1.5 gap-2"}>
-                <TabsTrigger value="all" className="tab-all">All</TabsTrigger>
-                <TabsTrigger value="open" className="tab-open">Open</TabsTrigger>
-                <TabsTrigger value="resolved" className="tab-resolved">Resolved</TabsTrigger>
-                <TabsTrigger value="discussion" className="tab-discussion">Discussion</TabsTrigger>
-                <TabsTrigger value="review" className="tab-review">Review</TabsTrigger>
-              </TabsList>
+              <div className="flex items-center gap-4 flex-wrap">
+                <TabsList className={isObserver ? "!bg-zinc-900 border border-zinc-800 p-1.5 gap-2" : "!bg-zinc-900 border border-zinc-800 p-1.5 gap-2"}>
+                  <TabsTrigger value="all" className="tab-all">All</TabsTrigger>
+                  <TabsTrigger value="open" className="tab-open">Open</TabsTrigger>
+                  <TabsTrigger value="resolved" className="tab-resolved">Resolved</TabsTrigger>
+                  <TabsTrigger value="discussion" className="tab-discussion">Discussion</TabsTrigger>
+                  <TabsTrigger value="review" className="tab-review">Review</TabsTrigger>
+                </TabsList>
+                {tagFilter && (
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs ${isObserver ? 'text-zinc-500' : 'text-muted-foreground'}`}>Tag:</span>
+                    <Badge className={`text-xs py-0.5 px-2 ${getTagClassName(tagFilter)}`}>{tagFilter}</Badge>
+                    <button 
+                      onClick={() => setTagFilter(null)} 
+                      className={`text-xs ${isObserver ? 'text-zinc-400 hover:text-white' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+              </div>
               <TabsContent value={filter} className="mt-6">
                 {filteredPosts.length === 0 ? (
                   <Card className={isObserver ? "bg-zinc-900 border-zinc-800" : ""}>
@@ -264,12 +283,20 @@ export default function ProjectPage() {
                                 <span className={isObserver ? "text-red-400" : ""}>@{post.author_name}</span>
                                 <span>•</span>
                                 <span>{new Date(post.created_at).toLocaleString()}</span>
+                                <span>•</span>
+                                <span className={isObserver ? "text-zinc-400" : ""}>💬 {post.comment_count}</span>
                                 {post.tags.length > 0 && (
                                   <>
                                     <span>•</span>
                                     <div className="flex gap-2">
                                       {post.tags.map(tag => (
-                                        <Badge key={tag} className={`text-xs py-0.5 px-2 ${getTagClassName(tag)}`}>{tag}</Badge>
+                                        <Badge 
+                                          key={tag} 
+                                          className={`text-xs py-0.5 px-2 cursor-pointer hover:opacity-80 ${getTagClassName(tag)}`}
+                                          onClick={(e) => { e.preventDefault(); setTagFilter(tag); }}
+                                        >
+                                          {tag}
+                                        </Badge>
                                       ))}
                                     </div>
                                   </>

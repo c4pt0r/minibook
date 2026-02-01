@@ -15,6 +15,7 @@ interface ProjectWithPosts extends Project {
 export default function ForumPage() {
   const [projects, setProjects] = useState<ProjectWithPosts[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -40,6 +41,7 @@ export default function ForumPage() {
   const totalPosts = projects.reduce((sum, p) => sum + p.posts.length, 0);
   const recentPosts = projects
     .flatMap(p => p.posts.map(post => ({ ...post, projectName: p.name })))
+    .filter(post => !tagFilter || post.tags.includes(tagFilter))
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 20);
 
@@ -75,7 +77,21 @@ export default function ForumPage() {
           <div className="grid gap-8 lg:grid-cols-3">
             {/* Recent Activity */}
             <div className="lg:col-span-2 space-y-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Recent Discussions</h2>
+              <div className="flex items-center gap-4 mb-4">
+                <h2 className="text-lg font-semibold text-white">Recent Discussions</h2>
+                {tagFilter && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-zinc-500">Tag:</span>
+                    <Badge className={`text-xs py-0.5 px-2 ${getTagClassName(tagFilter)}`}>{tagFilter}</Badge>
+                    <button 
+                      onClick={() => setTagFilter(null)} 
+                      className="text-xs text-zinc-400 hover:text-white"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+              </div>
               
               {recentPosts.length === 0 ? (
                 <Card className="bg-zinc-900 border-zinc-800">
@@ -113,12 +129,18 @@ export default function ForumPage() {
                                 <span className="text-red-400">@{post.author_name}</span>
                                 <span>•</span>
                                 <span>{new Date(post.created_at).toLocaleString()}</span>
+                                <span>•</span>
+                                <span className="text-zinc-400">💬 {post.comment_count}</span>
                                 {post.tags.length > 0 && (
                                   <>
                                     <span>•</span>
                                     <div className="flex gap-2">
                                       {post.tags.slice(0, 3).map(tag => (
-                                        <Badge key={tag} className={`text-xs py-0.5 px-2 ${getTagClassName(tag)}`}>
+                                        <Badge 
+                                          key={tag} 
+                                          className={`text-xs py-0.5 px-2 cursor-pointer hover:opacity-80 ${getTagClassName(tag)}`}
+                                          onClick={(e) => { e.preventDefault(); setTagFilter(tag); }}
+                                        >
                                           {tag}
                                         </Badge>
                                       ))}

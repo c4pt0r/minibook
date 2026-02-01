@@ -27,7 +27,7 @@ from .schemas import (
     NotificationResponse,
     GitHubWebhookCreate, GitHubWebhookResponse
 )
-from .utils import parse_mentions, trigger_webhooks, create_notifications
+from .utils import parse_mentions, validate_mentions, trigger_webhooks, create_notifications
 from .ratelimit import rate_limiter
 from .github_webhook import verify_signature, process_github_event
 
@@ -271,7 +271,8 @@ async def create_post(project_id: str, data: PostCreate, agent: Agent = Depends(
     if not project:
         raise HTTPException(404, "Project not found")
     
-    mentions = parse_mentions(data.content)
+    raw_mentions = parse_mentions(data.content)
+    mentions = validate_mentions(db, raw_mentions)
     
     post = Post(project_id=project_id, author_id=agent.id, title=data.title, content=data.content, type=data.type)
     post.tags = data.tags
@@ -289,6 +290,7 @@ async def create_post(project_id: str, data: PostCreate, agent: Agent = Depends(
         id=post.id, project_id=post.project_id, author_id=post.author_id, author_name=agent.name,
         title=post.title, content=post.content, type=post.type, status=post.status,
         tags=post.tags, mentions=post.mentions, pinned=post.pinned, github_ref=post.github_ref,
+        comment_count=0,
         created_at=post.created_at, updated_at=post.updated_at
     )
 
@@ -303,10 +305,21 @@ async def list_posts(project_id: str, status: Optional[str] = None, type: Option
         query = query.filter(Post.type == type)
     posts = query.order_by(Post.pinned.desc(), Post.created_at.desc()).all()
     
+    # Get comment counts for all posts in one query
+    post_ids = [p.id for p in posts]
+    comment_counts = {}
+    if post_ids:
+        from sqlalchemy import func
+        counts = db.query(Comment.post_id, func.count(Comment.id)).filter(
+            Comment.post_id.in_(post_ids)
+        ).group_by(Comment.post_id).all()
+        comment_counts = {post_id: count for post_id, count in counts}
+    
     return [PostResponse(
         id=p.id, project_id=p.project_id, author_id=p.author_id, author_name=p.author.name,
         title=p.title, content=p.content, type=p.type, status=p.status,
         tags=p.tags, mentions=p.mentions, pinned=p.pinned, github_ref=p.github_ref,
+        comment_count=comment_counts.get(p.id, 0),
         created_at=p.created_at, updated_at=p.updated_at
     ) for p in posts]
 
@@ -352,10 +365,21 @@ async def search_posts(
     
     posts = query.order_by(Post.created_at.desc()).limit(min(limit, 50)).all()
     
+    # Get comment counts
+    post_ids = [p.id for p in posts]
+    comment_counts = {}
+    if post_ids:
+        from sqlalchemy import func
+        counts = db.query(Comment.post_id, func.count(Comment.id)).filter(
+            Comment.post_id.in_(post_ids)
+        ).group_by(Comment.post_id).all()
+        comment_counts = {post_id: count for post_id, count in counts}
+    
     return [PostResponse(
         id=p.id, project_id=p.project_id, author_id=p.author_id, author_name=p.author.name,
         title=p.title, content=p.content, type=p.type, status=p.status,
         tags=p.tags, mentions=p.mentions, pinned=p.pinned, github_ref=p.github_ref,
+        comment_count=comment_counts.get(p.id, 0),
         created_at=p.created_at, updated_at=p.updated_at
     ) for p in posts]
 
@@ -366,10 +390,12 @@ async def get_post(post_id: str, db=Depends(get_db)):
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
         raise HTTPException(404, "Post not found")
+    comment_count = db.query(Comment).filter(Comment.post_id == post_id).count()
     return PostResponse(
         id=post.id, project_id=post.project_id, author_id=post.author_id, author_name=post.author.name,
         title=post.title, content=post.content, type=post.type, status=post.status,
         tags=post.tags, mentions=post.mentions, pinned=post.pinned, github_ref=post.github_ref,
+        comment_count=comment_count,
         created_at=post.created_at, updated_at=post.updated_at
     )
 
@@ -387,7 +413,7 @@ async def update_post(post_id: str, data: PostUpdate, agent: Agent = Depends(req
         post.title = data.title
     if data.content is not None:
         post.content = data.content
-        post.mentions = parse_mentions(data.content)
+        post.mentions = validate_mentions(db, parse_mentions(data.content))
     if data.status is not None:
         post.status = data.status
     if data.pinned is not None:
@@ -403,10 +429,12 @@ async def update_post(post_id: str, data: PostUpdate, agent: Agent = Depends(req
             "post_id": post.id, "old_status": old_status, "new_status": data.status, "by": agent.name
         })
     
+    comment_count = db.query(Comment).filter(Comment.post_id == post_id).count()
     return PostResponse(
         id=post.id, project_id=post.project_id, author_id=post.author_id, author_name=post.author.name,
         title=post.title, content=post.content, type=post.type, status=post.status,
         tags=post.tags, mentions=post.mentions, pinned=post.pinned, github_ref=post.github_ref,
+        comment_count=comment_count,
         created_at=post.created_at, updated_at=post.updated_at
     )
 
@@ -423,7 +451,8 @@ async def create_comment(post_id: str, data: CommentCreate, agent: Agent = Depen
     if not post:
         raise HTTPException(404, "Post not found")
     
-    mentions = parse_mentions(data.content)
+    raw_mentions = parse_mentions(data.content)
+    mentions = validate_mentions(db, raw_mentions)
     
     comment = Comment(post_id=post_id, author_id=agent.id, parent_id=data.parent_id, content=data.content)
     comment.mentions = mentions

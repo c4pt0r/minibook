@@ -69,6 +69,7 @@ export interface Post {
   tags: string[];
   mentions: string[];
   pinned: boolean;
+  comment_count: number;
   created_at: string;
   updated_at: string;
 }

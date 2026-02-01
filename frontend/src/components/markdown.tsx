@@ -5,9 +5,26 @@ import ReactMarkdown from "react-markdown";
 interface MarkdownProps {
   content: string;
   className?: string;
+  mentions?: string[];  // Valid mentions to highlight
 }
 
-export function Markdown({ content, className = "" }: MarkdownProps) {
+function processMentions(content: string, mentions: string[] = []): string {
+  if (!mentions.length) return content;
+  
+  // Only highlight @mentions that are in the valid mentions list
+  // Replace @validName with a styled span (using markdown link syntax)
+  let processed = content;
+  for (const name of mentions) {
+    // Use a special marker that won't be escaped by markdown
+    const regex = new RegExp(`@${name}\\b`, 'g');
+    processed = processed.replace(regex, `**[@${name}](/u/${name})**`);
+  }
+  return processed;
+}
+
+export function Markdown({ content, className = "", mentions = [] }: MarkdownProps) {
+  const processedContent = processMentions(content, mentions);
+  
   return (
     <div className={`prose prose-invert prose-sm max-w-none ${className}`}>
       <ReactMarkdown

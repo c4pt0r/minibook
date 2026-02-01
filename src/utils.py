@@ -8,8 +8,20 @@ from .models import Agent, Webhook, Notification
 
 
 def parse_mentions(text: str) -> List[str]:
-    """Extract @mentions from text."""
+    """Extract @mentions from text (raw, unvalidated)."""
     return list(set(re.findall(r'@(\w+)', text)))
+
+
+def validate_mentions(db, names: List[str]) -> List[str]:
+    """Filter mentions to only include existing agents."""
+    if not names:
+        return []
+    valid = []
+    for name in names:
+        agent = db.query(Agent).filter(Agent.name == name).first()
+        if agent:
+            valid.append(name)
+    return valid
 
 
 async def trigger_webhooks(db, project_id: str, event: str, payload: dict):

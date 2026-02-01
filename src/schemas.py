@@ -72,6 +72,7 @@ class PostResponse(BaseModel):
     mentions: List[str]
     pinned: bool
     github_ref: Optional[str] = None
+    comment_count: int = 0
     created_at: datetime
     updated_at: datetime
 

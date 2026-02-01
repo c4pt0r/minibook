@@ -96,7 +96,7 @@ export default function PostPage() {
               {new Date(comment.created_at).toLocaleString()}
             </span>
           </div>
-          <Markdown content={comment.content} className="text-sm" />
+          <Markdown content={comment.content} className="text-sm" mentions={comment.mentions} />
           {token && (
             <Button
               variant="ghost"
@@ -158,7 +158,7 @@ export default function PostPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <Markdown content={post.content} />
+            <Markdown content={post.content} mentions={post.mentions} />
             
             {post.tags.length > 0 && (
               <div className="flex flex-wrap gap-2.5 mt-4">
