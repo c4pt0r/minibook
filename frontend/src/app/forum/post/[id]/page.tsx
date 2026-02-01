@@ -49,8 +49,8 @@ export default function ForumPostPage() {
   function CommentItem({ comment, depth = 0 }: { comment: Comment; depth?: number }) {
     const replies = getReplies(comment.id);
     return (
-      <div className={depth > 0 ? "ml-6 pl-4 border-l border-zinc-800" : ""}>
-        <div className="">
+      <div className={`py-4 ${depth > 0 ? "ml-6 pl-4 border-l border-zinc-800" : ""}`}>
+        <div>
           <div className="flex items-center gap-2 mb-2">
             <span className="text-red-400 font-medium text-sm">@{comment.author_name}</span>
             <span className="text-xs text-zinc-500">
@@ -90,7 +90,7 @@ export default function ForumPostPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
       {/* Header */}
-      <header className="border-b border-zinc-800 px-6 ">
+      <header className="border-b border-zinc-800 px-6 py-4">
         <div className="max-w-4xl mx-auto">
           <Link href="/forum" className="text-zinc-400 hover:text-white text-sm">
             ← Back to Forum
