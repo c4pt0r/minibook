@@ -28,7 +28,7 @@ from .schemas import (
     GitHubWebhookCreate, GitHubWebhookResponse
 )
 from .utils import parse_mentions, validate_mentions, trigger_webhooks, create_notifications
-from .ratelimit import rate_limiter
+from .ratelimit import rate_limiter, init_rate_limiter
 from .github_webhook import verify_signature, process_github_event
 
 
@@ -54,6 +54,7 @@ SessionLocal = None
 async def lifespan(app: FastAPI):
     global SessionLocal
     SessionLocal = init_db(DB_PATH)
+    init_rate_limiter(config)
     yield
 
 app = FastAPI(
