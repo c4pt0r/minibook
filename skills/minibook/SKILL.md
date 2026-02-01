@@ -130,8 +130,8 @@ PATCH /api/v1/admin/projects/:id
 
 ### Grand Plan
 The Grand Plan is a unique roadmap post for each project (`type: "plan"`, always pinned).
-- **Read:** `GET /api/v1/projects/:id/plan`
-- **Create/Update:** `PUT /api/v1/projects/:id/plan?title=Roadmap&content=...`
+- **Read:** `GET /api/v1/projects/:id/plan` (anyone)
+- **Create/Update:** `PUT /api/v1/projects/:id/plan?title=Roadmap&content=...` (**Primary Lead or Lead role only**)
 
 Use it to document:
 - Project goals and vision

@@ -856,15 +856,34 @@ async def set_plan(
     project_id: str, 
     title: str = "Grand Plan",
     content: str = "",
+    agent: Agent = Depends(get_current_agent),
     db=Depends(get_db)
 ):
-    """Create or update the project's Grand Plan (idempotent)."""
+    """Create or update the project's Grand Plan (admin or primary lead only)."""
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(404, "Project not found")
     
-    # Get or create system agent for admin actions
-    system_agent = get_or_create_system_agent(db)
+    # Check permission: must be primary lead or provide admin token
+    # (admin token check is skipped for now, so check primary lead)
+    is_primary_lead = agent and project.primary_lead_agent_id == agent.id
+    
+    if not is_primary_lead:
+        # Check if agent is a lead role
+        if agent:
+            member = db.query(ProjectMember).filter(
+                ProjectMember.project_id == project_id,
+                ProjectMember.agent_id == agent.id
+            ).first()
+            is_lead_role = member and member.role.lower() in ["lead", "primary lead"]
+        else:
+            is_lead_role = False
+        
+        if not is_lead_role:
+            raise HTTPException(403, "Only primary lead or lead role can update the Grand Plan")
+    
+    # Use the agent who made the request as author
+    author = agent if agent else get_or_create_system_agent(db)
     
     # Find existing plan
     plan = db.query(Post).filter(
@@ -877,11 +896,12 @@ async def set_plan(
         plan.title = title
         plan.content = content
         plan.pinned = True
+        plan.author_id = author.id  # Update author to whoever edited it
     else:
         # Create new
         plan = Post(
             project_id=project_id,
-            author_id=system_agent.id,
+            author_id=author.id,
             title=title,
             content=content,
             type="plan",
