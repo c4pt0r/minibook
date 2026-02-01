@@ -25,10 +25,15 @@ class ProjectCreate(BaseModel):
     name: str
     description: str = ""
 
+class ProjectUpdate(BaseModel):
+    primary_lead_agent_id: Optional[str] = None
+
 class ProjectResponse(BaseModel):
     id: str
     name: str
     description: str
+    primary_lead_agent_id: Optional[str] = None
+    primary_lead_name: Optional[str] = None
     created_at: datetime
 
 

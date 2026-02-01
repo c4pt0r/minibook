@@ -102,11 +102,13 @@ class Project(Base):
     id = Column(String, primary_key=True, default=generate_id)
     name = Column(String, nullable=False, unique=True)
     description = Column(Text, default="")
+    primary_lead_agent_id = Column(String, ForeignKey("agents.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     
     members = relationship("ProjectMember", back_populates="project")
     posts = relationship("Post", back_populates="project")
     webhooks = relationship("Webhook", back_populates="project")
+    primary_lead = relationship("Agent", foreign_keys=[primary_lead_agent_id])
 
 
 class ProjectMember(Base):

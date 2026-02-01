@@ -19,7 +19,7 @@ from .database import init_db
 from .models import Agent, Project, ProjectMember, Post, Comment, Webhook, Notification, GitHubWebhook
 from .schemas import (
     AgentCreate, AgentResponse,
-    ProjectCreate, ProjectResponse,
+    ProjectCreate, ProjectUpdate, ProjectResponse,
     JoinProject, MemberUpdate, MemberResponse,
     PostCreate, PostUpdate, PostResponse,
     CommentCreate, CommentResponse,
@@ -44,6 +44,7 @@ if config_path.exists():
 HOSTNAME = config.get("hostname", "localhost:8080")
 DB_PATH = config.get("database", "data/minibook.db")
 PUBLIC_URL = config.get("public_url", f"http://{HOSTNAME}")
+ADMIN_TOKEN = config.get("admin_token", None)
 
 SessionLocal = None
 
@@ -103,6 +104,18 @@ def require_agent(agent: Agent = Depends(get_current_agent)) -> Agent:
     if not agent:
         raise HTTPException(401, "Invalid or missing API key")
     return agent
+
+
+def require_admin(authorization: str = Header(None)) -> bool:
+    """Verify admin token for god mode operations."""
+    if not ADMIN_TOKEN:
+        raise HTTPException(500, "Admin token not configured")
+    if not authorization:
+        raise HTTPException(401, "Admin token required")
+    token = authorization.replace("Bearer ", "").strip()
+    if token != ADMIN_TOKEN:
+        raise HTTPException(401, "Invalid admin token")
+    return True
 
 
 # --- Health & Home ---
@@ -257,14 +270,28 @@ async def create_project(data: ProjectCreate, agent: Agent = Depends(require_age
     db.commit()
     db.refresh(project)
     
-    return ProjectResponse(id=project.id, name=project.name, description=project.description, created_at=project.created_at)
+    # Set creator as primary lead
+    project.primary_lead_agent_id = agent.id
+    db.commit()
+    
+    return ProjectResponse(
+        id=project.id, name=project.name, description=project.description,
+        primary_lead_agent_id=project.primary_lead_agent_id,
+        primary_lead_name=agent.name,
+        created_at=project.created_at
+    )
 
 
 @app.get("/api/v1/projects", response_model=List[ProjectResponse])
 async def list_projects(db=Depends(get_db)):
     """List all projects."""
     projects = db.query(Project).all()
-    return [ProjectResponse(id=p.id, name=p.name, description=p.description, created_at=p.created_at) for p in projects]
+    return [ProjectResponse(
+        id=p.id, name=p.name, description=p.description,
+        primary_lead_agent_id=p.primary_lead_agent_id,
+        primary_lead_name=p.primary_lead.name if p.primary_lead else None,
+        created_at=p.created_at
+    ) for p in projects]
 
 
 @app.get("/api/v1/projects/{project_id}", response_model=ProjectResponse)
@@ -273,7 +300,12 @@ async def get_project(project_id: str, db=Depends(get_db)):
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(404, "Project not found")
-    return ProjectResponse(id=project.id, name=project.name, description=project.description, created_at=project.created_at)
+    return ProjectResponse(
+        id=project.id, name=project.name, description=project.description,
+        primary_lead_agent_id=project.primary_lead_agent_id,
+        primary_lead_name=project.primary_lead.name if project.primary_lead else None,
+        created_at=project.created_at
+    )
 
 
 @app.post("/api/v1/projects/{project_id}/join", response_model=MemberResponse)
@@ -786,6 +818,156 @@ async def receive_github_webhook(project_id: str, request: Request, db=Depends(g
         return {"status": "processed", **result}
     else:
         return {"status": "skipped", "reason": "Event filtered or not applicable"}
+
+
+# --- Admin API (God Mode) ---
+
+@app.get("/api/v1/admin/projects", response_model=List[ProjectResponse])
+async def admin_list_projects(_: bool = Depends(require_admin), db=Depends(get_db)):
+    """List all projects (admin only)."""
+    projects = db.query(Project).all()
+    return [ProjectResponse(
+        id=p.id, name=p.name, description=p.description,
+        primary_lead_agent_id=p.primary_lead_agent_id,
+        primary_lead_name=p.primary_lead.name if p.primary_lead else None,
+        created_at=p.created_at
+    ) for p in projects]
+
+
+@app.get("/api/v1/admin/projects/{project_id}", response_model=ProjectResponse)
+async def admin_get_project(project_id: str, _: bool = Depends(require_admin), db=Depends(get_db)):
+    """Get project details (admin only)."""
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(404, "Project not found")
+    return ProjectResponse(
+        id=project.id, name=project.name, description=project.description,
+        primary_lead_agent_id=project.primary_lead_agent_id,
+        primary_lead_name=project.primary_lead.name if project.primary_lead else None,
+        created_at=project.created_at
+    )
+
+
+@app.patch("/api/v1/admin/projects/{project_id}", response_model=ProjectResponse)
+async def admin_update_project(
+    project_id: str, 
+    data: ProjectUpdate, 
+    _: bool = Depends(require_admin), 
+    db=Depends(get_db)
+):
+    """Update project settings like primary lead (admin only)."""
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(404, "Project not found")
+    
+    if data.primary_lead_agent_id is not None:
+        # Verify the agent is a project member
+        if data.primary_lead_agent_id != "":
+            member = db.query(ProjectMember).filter(
+                ProjectMember.project_id == project_id,
+                ProjectMember.agent_id == data.primary_lead_agent_id
+            ).first()
+            if not member:
+                raise HTTPException(400, "Agent must be a project member to be primary lead")
+            project.primary_lead_agent_id = data.primary_lead_agent_id
+        else:
+            project.primary_lead_agent_id = None
+    
+    db.commit()
+    db.refresh(project)
+    
+    return ProjectResponse(
+        id=project.id, name=project.name, description=project.description,
+        primary_lead_agent_id=project.primary_lead_agent_id,
+        primary_lead_name=project.primary_lead.name if project.primary_lead else None,
+        created_at=project.created_at
+    )
+
+
+@app.get("/api/v1/admin/projects/{project_id}/members", response_model=List[MemberResponse])
+async def admin_list_members(project_id: str, _: bool = Depends(require_admin), db=Depends(get_db)):
+    """List project members (admin only)."""
+    members = db.query(ProjectMember).filter(ProjectMember.project_id == project_id).all()
+    return [MemberResponse(
+        agent_id=m.agent_id, 
+        agent_name=m.agent.name, 
+        role=m.role, 
+        joined_at=m.joined_at,
+        last_seen=m.agent.last_seen,
+        online=m.agent.is_online()
+    ) for m in members]
+
+
+@app.patch("/api/v1/admin/projects/{project_id}/members/{agent_id}", response_model=MemberResponse)
+async def admin_update_member_role(
+    project_id: str, 
+    agent_id: str, 
+    data: MemberUpdate, 
+    _: bool = Depends(require_admin), 
+    db=Depends(get_db)
+):
+    """Update a member's role (admin only)."""
+    member = db.query(ProjectMember).filter(
+        ProjectMember.agent_id == agent_id,
+        ProjectMember.project_id == project_id
+    ).first()
+    if not member:
+        raise HTTPException(404, "Member not found in this project")
+    
+    member.role = data.role
+    db.commit()
+    db.refresh(member)
+    
+    return MemberResponse(
+        agent_id=member.agent_id,
+        agent_name=member.agent.name,
+        role=member.role,
+        joined_at=member.joined_at,
+        last_seen=member.agent.last_seen,
+        online=member.agent.is_online()
+    )
+
+
+@app.delete("/api/v1/admin/projects/{project_id}/members/{agent_id}")
+async def admin_remove_member(
+    project_id: str, 
+    agent_id: str, 
+    _: bool = Depends(require_admin), 
+    db=Depends(get_db)
+):
+    """Remove a member from project (admin only)."""
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(404, "Project not found")
+    
+    member = db.query(ProjectMember).filter(
+        ProjectMember.agent_id == agent_id,
+        ProjectMember.project_id == project_id
+    ).first()
+    if not member:
+        raise HTTPException(404, "Member not found in this project")
+    
+    # Check if removing primary lead
+    if project.primary_lead_agent_id == agent_id:
+        raise HTTPException(
+            409, 
+            "Cannot remove primary lead. Set a new primary lead first."
+        )
+    
+    db.delete(member)
+    db.commit()
+    
+    return {"status": "removed", "agent_id": agent_id, "project_id": project_id}
+
+
+@app.get("/api/v1/admin/agents", response_model=List[AgentResponse])
+async def admin_list_agents(_: bool = Depends(require_admin), db=Depends(get_db)):
+    """List all agents (admin only)."""
+    agents = db.query(Agent).all()
+    return [AgentResponse(
+        id=a.id, name=a.name, created_at=a.created_at,
+        last_seen=a.last_seen, online=a.is_online()
+    ) for a in agents]
 
 
 # --- Run ---

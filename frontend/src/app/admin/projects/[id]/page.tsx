@@ -19,16 +19,28 @@ interface Member {
   online: boolean;
 }
 
+interface ProjectWithLead {
+  id: string;
+  name: string;
+  description: string;
+  primary_lead_agent_id: string | null;
+  primary_lead_name: string | null;
+  created_at: string;
+}
+
+const ADMIN_TOKEN = "mb_admin_minibook_secret_2026";
+
 export default function AdminProjectPage() {
   const params = useParams();
   const projectId = params.id as string;
 
-  const [project, setProject] = useState<Project | null>(null);
+  const [project, setProject] = useState<ProjectWithLead | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingMember, setEditingMember] = useState<string | null>(null);
   const [editRole, setEditRole] = useState("");
   const [saving, setSaving] = useState(false);
+  const [settingLead, setSettingLead] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -37,8 +49,12 @@ export default function AdminProjectPage() {
   async function loadData() {
     try {
       const [projectData, memberList] = await Promise.all([
-        apiClient.getProject(projectId),
-        fetch(`/api/v1/projects/${projectId}/members`).then(r => r.json())
+        fetch(`/api/v1/admin/projects/${projectId}`, {
+          headers: { "Authorization": `Bearer ${ADMIN_TOKEN}` }
+        }).then(r => r.json()),
+        fetch(`/api/v1/admin/projects/${projectId}/members`, {
+          headers: { "Authorization": `Bearer ${ADMIN_TOKEN}` }
+        }).then(r => r.json())
       ]);
       setProject(projectData);
       setMembers(memberList);
@@ -50,18 +66,12 @@ export default function AdminProjectPage() {
   }
 
   async function saveRole(agentId: string) {
-    const token = localStorage.getItem("minibook_token");
-    if (!token) {
-      alert("Please register/login first from the Dashboard");
-      return;
-    }
-
     setSaving(true);
     try {
-      const res = await fetch(`/api/v1/projects/${projectId}/members/${agentId}`, {
+      const res = await fetch(`/api/v1/admin/projects/${projectId}/members/${agentId}`, {
         method: "PATCH",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          "Authorization": `Bearer ${ADMIN_TOKEN}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ role: editRole })
@@ -79,6 +89,52 @@ export default function AdminProjectPage() {
       alert(e instanceof Error ? e.message : "Failed to update role");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function setPrimaryLead(agentId: string) {
+    setSettingLead(true);
+    try {
+      const res = await fetch(`/api/v1/admin/projects/${projectId}`, {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Bearer ${ADMIN_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ primary_lead_agent_id: agentId })
+      });
+      
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Failed to set primary lead");
+      }
+
+      const updated = await res.json();
+      setProject(updated);
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : "Failed to set primary lead");
+    } finally {
+      setSettingLead(false);
+    }
+  }
+
+  async function removeMember(agentId: string, agentName: string) {
+    if (!confirm(`Remove @${agentName} from the project?`)) return;
+    
+    try {
+      const res = await fetch(`/api/v1/admin/projects/${projectId}/members/${agentId}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${ADMIN_TOKEN}` }
+      });
+      
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Failed to remove member");
+      }
+
+      setMembers(members.filter(m => m.agent_id !== agentId));
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : "Failed to remove member");
     }
   }
 
@@ -141,10 +197,19 @@ export default function AdminProjectPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {members.map((member) => (
+                  {members.map((member) => {
+                    const isPrimaryLead = project?.primary_lead_agent_id === member.agent_id;
+                    return (
                     <tr key={member.agent_id} className="border-b border-zinc-800 last:border-0">
                       <td className="p-4">
-                        <span className="text-red-400 font-medium">@{member.agent_name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-red-400 font-medium">@{member.agent_name}</span>
+                          {isPrimaryLead && (
+                            <Badge className="bg-yellow-500/20 text-yellow-400 border-0 text-xs">
+                              👑 Lead
+                            </Badge>
+                          )}
+                        </div>
                       </td>
                       <td className="p-4">
                         {editingMember === member.agent_id ? (
@@ -184,41 +249,66 @@ export default function AdminProjectPage() {
                         {new Date(member.joined_at).toLocaleDateString()}
                       </td>
                       <td className="p-4 text-right">
-                        {editingMember === member.agent_id ? (
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => setEditingMember(null)}
-                              className="text-zinc-400"
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => saveRole(member.agent_id)}
-                              disabled={saving}
-                              className="bg-red-500 hover:bg-red-600"
-                            >
-                              {saving ? "..." : "Save"}
-                            </Button>
-                          </div>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              setEditingMember(member.agent_id);
-                              setEditRole(member.role);
-                            }}
-                            className="text-zinc-400 hover:text-white"
-                          >
-                            Edit
-                          </Button>
-                        )}
+                        <div className="flex items-center justify-end gap-2">
+                          {editingMember === member.agent_id ? (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setEditingMember(null)}
+                                className="text-zinc-400"
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => saveRole(member.agent_id)}
+                                disabled={saving}
+                                className="bg-red-500 hover:bg-red-600"
+                              >
+                                {saving ? "..." : "Save"}
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  setEditingMember(member.agent_id);
+                                  setEditRole(member.role);
+                                }}
+                                className="text-zinc-400 hover:text-white"
+                              >
+                                Edit
+                              </Button>
+                              {!isPrimaryLead && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => setPrimaryLead(member.agent_id)}
+                                  disabled={settingLead}
+                                  className="text-yellow-400 hover:text-yellow-300"
+                                >
+                                  👑
+                                </Button>
+                              )}
+                              {!isPrimaryLead && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => removeMember(member.agent_id, member.agent_name)}
+                                  className="text-zinc-500 hover:text-red-400"
+                                >
+                                  ✕
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
-                  ))}
+                  );})}
                 </tbody>
               </table>
             </CardContent>
