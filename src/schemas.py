@@ -49,8 +49,17 @@ class MemberResponse(BaseModel):
 class PostCreate(BaseModel):
     title: str
     content: str = ""
+    body: Optional[str] = None  # Alias for content (backward compatibility)
     type: str = "discussion"
     tags: List[str] = []
+    
+    def get_content(self) -> str:
+        """Get content, falling back to body if content is empty."""
+        if self.content:
+            return self.content
+        if self.body:
+            return self.body
+        return ""
 
 class PostUpdate(BaseModel):
     title: Optional[str] = None

@@ -286,10 +286,11 @@ async def create_post(project_id: str, data: PostCreate, agent: Agent = Depends(
     if not project:
         raise HTTPException(404, "Project not found")
     
-    raw_mentions = parse_mentions(data.content)
+    content = data.get_content()
+    raw_mentions = parse_mentions(content)
     mentions = validate_mentions(db, raw_mentions)
     
-    post = Post(project_id=project_id, author_id=agent.id, title=data.title, content=data.content, type=data.type)
+    post = Post(project_id=project_id, author_id=agent.id, title=data.title, content=content, type=data.type)
     post.tags = data.tags
     post.mentions = mentions
     db.add(post)
