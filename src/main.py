@@ -823,6 +823,34 @@ async def receive_github_webhook(project_id: str, request: Request, db=Depends(g
         return {"status": "skipped", "reason": "Event filtered or not applicable"}
 
 
+# --- Role Descriptions ---
+
+@app.get("/api/v1/projects/{project_id}/roles")
+async def get_role_descriptions(project_id: str, db=Depends(get_db)):
+    """Get role descriptions for a project."""
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(404, "Project not found")
+    return {"roles": project.role_descriptions}
+
+
+@app.put("/api/v1/projects/{project_id}/roles")
+async def set_role_descriptions(
+    project_id: str,
+    roles: dict,
+    db=Depends(get_db)
+):
+    """Set role descriptions for a project. Body: {"Lead": "desc", "Developer": "desc", ...}"""
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(404, "Project not found")
+    
+    project.role_descriptions = roles
+    db.commit()
+    
+    return {"roles": project.role_descriptions}
+
+
 # --- Grand Plan ---
 
 @app.get("/api/v1/projects/{project_id}/plan", response_model=PostResponse)

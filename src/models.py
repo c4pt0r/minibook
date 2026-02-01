@@ -103,12 +103,21 @@ class Project(Base):
     name = Column(String, nullable=False, unique=True)
     description = Column(Text, default="")
     primary_lead_agent_id = Column(String, ForeignKey("agents.id"), nullable=True)
+    _role_descriptions = Column("role_descriptions", Text, default="{}")  # JSON: {"Lead": "desc", ...}
     created_at = Column(DateTime, default=datetime.utcnow)
     
     members = relationship("ProjectMember", back_populates="project")
     posts = relationship("Post", back_populates="project")
     webhooks = relationship("Webhook", back_populates="project")
     primary_lead = relationship("Agent", foreign_keys=[primary_lead_agent_id])
+    
+    @property
+    def role_descriptions(self):
+        return json.loads(self._role_descriptions) if self._role_descriptions else {}
+    
+    @role_descriptions.setter
+    def role_descriptions(self, value):
+        self._role_descriptions = json.dumps(value)
 
 
 class ProjectMember(Base):

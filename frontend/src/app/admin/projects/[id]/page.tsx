@@ -55,6 +55,10 @@ export default function AdminProjectPage() {
   const [planTitle, setPlanTitle] = useState("");
   const [planContent, setPlanContent] = useState("");
   const [savingPlan, setSavingPlan] = useState(false);
+  const [roleDescs, setRoleDescs] = useState<Record<string, string>>({});
+  const [editingRoles, setEditingRoles] = useState(false);
+  const [roleDescsEdit, setRoleDescsEdit] = useState<Record<string, string>>({});
+  const [savingRoles, setSavingRoles] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -62,10 +66,11 @@ export default function AdminProjectPage() {
 
   async function loadData() {
     try {
-      const [projectRes, membersRes, planRes] = await Promise.all([
+      const [projectRes, membersRes, planRes, rolesRes] = await Promise.all([
         fetch(`/api/v1/admin/projects/${projectId}`),
         fetch(`/api/v1/admin/projects/${projectId}/members`),
-        fetch(`/api/v1/projects/${projectId}/plan`)
+        fetch(`/api/v1/projects/${projectId}/plan`),
+        fetch(`/api/v1/projects/${projectId}/roles`)
       ]);
       
       const projectData = await projectRes.json();
@@ -84,6 +89,12 @@ export default function AdminProjectPage() {
         setPlan(planData);
         setPlanTitle(planData.title);
         setPlanContent(planData.content);
+      }
+      
+      if (rolesRes.ok) {
+        const rolesData = await rolesRes.json();
+        setRoleDescs(rolesData.roles || {});
+        setRoleDescsEdit(rolesData.roles || {});
       }
     } catch (e) {
       console.error(e);
@@ -156,6 +167,30 @@ export default function AdminProjectPage() {
       setMembers(members.filter(m => m.agent_id !== agentId));
     } catch (e: unknown) {
       alert(e instanceof Error ? e.message : "Failed to remove member");
+    }
+  }
+
+  async function saveRoleDescs() {
+    setSavingRoles(true);
+    try {
+      const res = await fetch(`/api/v1/projects/${projectId}/roles`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(roleDescsEdit)
+      });
+      
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Failed to save roles");
+      }
+
+      const data = await res.json();
+      setRoleDescs(data.roles);
+      setEditingRoles(false);
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : "Failed to save roles");
+    } finally {
+      setSavingRoles(false);
     }
   }
 
@@ -437,19 +472,83 @@ export default function AdminProjectPage() {
           </Card>
         )}
 
-        {/* Role suggestions */}
-        <div className="mt-6 p-4 bg-zinc-900/50 rounded-lg border border-zinc-800">
-          <h3 className="text-sm font-medium text-zinc-300 mb-2">Suggested Roles</h3>
-          <div className="flex flex-wrap gap-2">
-            {suggestedRoles.map(role => (
-              <Badge key={role} variant="outline" className="border-zinc-700 text-zinc-400">
-                {role}
-              </Badge>
-            ))}
+        {/* Role Definitions */}
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white">📖 Role Definitions</h2>
+            {!editingRoles && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setEditingRoles(true)}
+                className="text-zinc-400 hover:text-white"
+              >
+                Edit
+              </Button>
+            )}
           </div>
-          <p className="text-xs text-zinc-500 mt-2">
-            Roles are free-text labels. Use whatever makes sense for your team.
-          </p>
+
+          {editingRoles ? (
+            <Card className="bg-zinc-900 border-zinc-800">
+              <CardContent className="p-4 space-y-3">
+                {suggestedRoles.map(role => (
+                  <div key={role} className="flex items-start gap-3">
+                    <Badge variant="secondary" className="bg-zinc-800 text-zinc-300 mt-1 min-w-[100px] justify-center">
+                      {role}
+                    </Badge>
+                    <Input
+                      value={roleDescsEdit[role] || ""}
+                      onChange={(e) => setRoleDescsEdit({ ...roleDescsEdit, [role]: e.target.value })}
+                      placeholder={`What does ${role} do?`}
+                      className="bg-zinc-800 border-zinc-700 flex-1"
+                    />
+                  </div>
+                ))}
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setEditingRoles(false);
+                      setRoleDescsEdit(roleDescs);
+                    }}
+                    className="text-zinc-400"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={saveRoleDescs}
+                    disabled={savingRoles}
+                    className="bg-red-500 hover:bg-red-600"
+                  >
+                    {savingRoles ? "Saving..." : "Save"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : Object.keys(roleDescs).length > 0 ? (
+            <Card className="bg-zinc-900 border-zinc-800">
+              <CardContent className="p-4">
+                <div className="space-y-2">
+                  {Object.entries(roleDescs).map(([role, desc]) => (
+                    <div key={role} className="flex items-start gap-3">
+                      <Badge variant="secondary" className="bg-zinc-800 text-zinc-300 min-w-[100px] justify-center">
+                        {role}
+                      </Badge>
+                      <span className="text-sm text-zinc-400">{desc}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="bg-zinc-900 border-zinc-800 border-dashed">
+              <CardContent className="py-6 text-center text-zinc-500">
+                No role definitions yet. Click "Edit" to describe what each role means.
+              </CardContent>
+            </Card>
+          )}
         </div>
       </main>
 
