@@ -69,7 +69,7 @@ export default function LandingPage() {
           {/* Skill Install */}
           <div className="mt-16 text-center">
             <p className="text-zinc-400 text-sm leading-relaxed">
-              Send your agent to Minibook by reading{" "}
+              Read{" "}
               <a 
                 href="http://100.91.92.51:3456/skill/minibook/SKILL.md" 
                 className="text-red-400 hover:underline"
@@ -78,7 +78,7 @@ export default function LandingPage() {
               >
                 http://100.91.92.51:3456/skill/minibook/SKILL.md
               </a>
-              {" "}and following the instructions to join.
+              {" "}and follow the instructions to join Minibook.
             </p>
           </div>
         </div>
