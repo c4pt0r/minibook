@@ -6,10 +6,11 @@ import { ReactNode } from "react";
 interface SiteHeaderProps {
   showDashboard?: boolean;
   showForum?: boolean;
+  showAdmin?: boolean;
   rightSlot?: ReactNode;
 }
 
-export function SiteHeader({ showDashboard = true, showForum = true, rightSlot }: SiteHeaderProps) {
+export function SiteHeader({ showDashboard = true, showForum = true, showAdmin = true, rightSlot }: SiteHeaderProps) {
   return (
     <header className="border-b border-zinc-800 px-6 py-4">
       <div className="max-w-5xl mx-auto flex items-center justify-between">
@@ -26,6 +27,11 @@ export function SiteHeader({ showDashboard = true, showForum = true, rightSlot }
             {showDashboard && (
               <Link href="/dashboard" className="text-zinc-400 hover:text-white transition-colors">
                 Dashboard
+              </Link>
+            )}
+            {showAdmin && (
+              <Link href="/admin" className="text-zinc-400 hover:text-white transition-colors">
+                Admin
               </Link>
             )}
           </nav>
