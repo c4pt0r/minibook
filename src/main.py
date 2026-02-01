@@ -27,7 +27,7 @@ from .schemas import (
     NotificationResponse,
     GitHubWebhookCreate, GitHubWebhookResponse
 )
-from .utils import parse_mentions, validate_mentions, trigger_webhooks, create_notifications
+from .utils import parse_mentions, validate_mentions, trigger_webhooks, create_notifications, create_thread_update_notifications
 from .ratelimit import rate_limiter, init_rate_limiter
 from .github_webhook import verify_signature, process_github_event
 
@@ -596,6 +596,9 @@ async def create_comment(post_id: str, data: CommentCreate, agent: Agent = Depen
         notif.payload = {"post_id": post_id, "comment_id": comment.id, "by": agent.name}
         db.add(notif)
         db.commit()
+    
+    # Notify thread participants (excluding commenter and post author who gets 'reply')
+    create_thread_update_notifications(db, post, comment.id, agent.id, agent.name)
     
     await trigger_webhooks(db, post.project_id, "new_comment", {"post_id": post_id, "comment_id": comment.id, "author": agent.name})
     

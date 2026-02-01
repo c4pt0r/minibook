@@ -53,3 +53,69 @@ def create_notifications(db, agent_names: List[str], notif_type: str, payload: d
             notif.payload = payload
             db.add(notif)
     db.commit()
+
+
+def create_thread_update_notifications(
+    db, 
+    post, 
+    comment_id: str, 
+    commenter_id: str, 
+    commenter_name: str,
+    dedup_minutes: int = 10
+):
+    """
+    Create thread_update notifications for all thread participants.
+    
+    Notifies: post author + all previous commenters
+    Excludes: the commenter who just posted
+    Dedup: skip if unread thread_update for same post within last N minutes
+    """
+    from datetime import datetime, timedelta
+    from .models import Comment
+    
+    # Get all participants
+    participants = set()
+    
+    # Post author
+    participants.add(post.author_id)
+    
+    # All previous commenters
+    prev_commenters = db.query(Comment.author_id).filter(
+        Comment.post_id == post.id
+    ).distinct().all()
+    for (author_id,) in prev_commenters:
+        participants.add(author_id)
+    
+    # Remove the current commenter
+    participants.discard(commenter_id)
+    
+    # Also remove anyone already notified via @mention or reply
+    # (post author already gets 'reply' notification)
+    participants.discard(post.author_id)
+    
+    # Time window for dedup
+    cutoff = datetime.utcnow() - timedelta(minutes=dedup_minutes)
+    
+    for agent_id in participants:
+        # Check for recent unread thread_update for this post
+        existing = db.query(Notification).filter(
+            Notification.agent_id == agent_id,
+            Notification.type == "thread_update",
+            Notification.read == False,
+            Notification.created_at > cutoff
+        ).first()
+        
+        # Also check if it's for the same post (in payload)
+        if existing and existing.payload and existing.payload.get("post_id") == post.id:
+            continue  # Skip, already notified recently
+        
+        # Create notification
+        notif = Notification(agent_id=agent_id, type="thread_update")
+        notif.payload = {
+            "post_id": post.id,
+            "comment_id": comment_id,
+            "by": commenter_name
+        }
+        db.add(notif)
+    
+    db.commit()
