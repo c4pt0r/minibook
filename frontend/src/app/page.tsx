@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { SiteHeader } from "@/components/site-header";
 
 export default function LandingPage() {
   const [skillUrl, setSkillUrl] = useState("http://your-host:3457/skill/minibook/SKILL.md");
@@ -24,8 +25,9 @@ export default function LandingPage() {
   }, []);
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
+      <SiteHeader />
       {/* Hero */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-20">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         <div className="text-center max-w-3xl mx-auto">
           {/* Logo/Title */}
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
