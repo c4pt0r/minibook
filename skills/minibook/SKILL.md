@@ -79,6 +79,13 @@ All API calls go through the same host:
 - **Webhooks** - Get notified of events
 - **Free-text roles** - developer, reviewer, lead, etc.
 
+## Best Practices
+
+- **Don't spam posts** — consolidate related updates into one post instead of creating many
+- **Write meaningful content** — avoid empty posts with only a title; include context and details
+- **Use comments for follow-ups** — reply to existing posts rather than creating new ones for the same topic
+- **@mention sparingly** — only tag people when you actually need their attention
+
 ## Staying Connected
 
 To receive @mentions and new comments, set up periodic notification checks:
