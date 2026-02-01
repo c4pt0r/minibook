@@ -108,17 +108,14 @@ def require_agent(agent: Agent = Depends(get_current_agent)) -> Agent:
 
 def require_admin(authorization: str = Header(None)) -> bool:
     """Verify admin token for god mode operations."""
-    # TODO: Re-enable token verification for production
-    # For now, skip validation to ease development
+    if not ADMIN_TOKEN:
+        raise HTTPException(500, "Admin token not configured")
+    if not authorization:
+        raise HTTPException(401, "Admin token required")
+    token = authorization.replace("Bearer ", "").strip()
+    if token != ADMIN_TOKEN:
+        raise HTTPException(403, "Invalid admin token")
     return True
-    # if not ADMIN_TOKEN:
-    #     raise HTTPException(500, "Admin token not configured")
-    # if not authorization:
-    #     raise HTTPException(401, "Admin token required")
-    # token = authorization.replace("Bearer ", "").strip()
-    # if token != ADMIN_TOKEN:
-    #     raise HTTPException(401, "Invalid admin token")
-    # return True
 
 
 # --- Health & Home ---
@@ -313,7 +310,7 @@ async def get_project(project_id: str, db=Depends(get_db)):
 
 @app.post("/api/v1/projects/{project_id}/join", response_model=MemberResponse)
 async def join_project(project_id: str, data: JoinProject, agent: Agent = Depends(require_agent), db=Depends(get_db)):
-    """Join a project with a role."""
+    """Join a project. Role is always 'member' - only admins can assign roles."""
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(404, "Project not found")
@@ -321,7 +318,8 @@ async def join_project(project_id: str, data: JoinProject, agent: Agent = Depend
     if db.query(ProjectMember).filter(ProjectMember.agent_id == agent.id, ProjectMember.project_id == project_id).first():
         raise HTTPException(400, "Already a member")
     
-    member = ProjectMember(agent_id=agent.id, project_id=project_id, role=data.role)
+    # Ignore client-provided role, always assign "member"
+    member = ProjectMember(agent_id=agent.id, project_id=project_id, role="member")
     db.add(member)
     db.commit()
     db.refresh(member)
@@ -351,25 +349,12 @@ async def update_member_role(
     agent: Agent = Depends(require_agent), 
     db=Depends(get_db)
 ):
-    """Update a member's role. Any project member can update roles (trust-based)."""
-    # Check if requester is a project member
-    requester_member = db.query(ProjectMember).filter(
-        ProjectMember.agent_id == agent.id,
-        ProjectMember.project_id == project_id
-    ).first()
-    if not requester_member:
-        raise HTTPException(403, "You must be a project member to update roles")
-    
-    # Find target member
-    target_member = db.query(ProjectMember).filter(
-        ProjectMember.agent_id == agent_id,
-        ProjectMember.project_id == project_id
-    ).first()
-    if not target_member:
-        raise HTTPException(404, "Member not found in this project")
-    
-    # Update role
-    target_member.role = data.role
+    """Update a member's role. DEPRECATED: Use admin API instead. Returns 403."""
+    # Role updates disabled for regular API - use /api/v1/admin/... endpoints
+    raise HTTPException(
+        403, 
+        "Role updates are admin-only. Use /api/v1/admin/projects/{project_id}/members/{agent_id}"
+    )
     db.commit()
     db.refresh(target_member)
     
@@ -884,34 +869,17 @@ async def set_plan(
     project_id: str, 
     title: str = "Grand Plan",
     content: str = "",
-    agent: Agent = Depends(get_current_agent),
+    _: bool = Depends(require_admin),
     db=Depends(get_db)
 ):
-    """Create or update the project's Grand Plan (admin or primary lead only)."""
+    """Create or update the project's Grand Plan (admin only via ADMIN_TOKEN)."""
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(404, "Project not found")
     
-    # Check permission: must be primary lead or provide admin token
-    # (admin token check is skipped for now, so check primary lead)
-    is_primary_lead = agent and project.primary_lead_agent_id == agent.id
-    
-    if not is_primary_lead:
-        # Check if agent is a lead role
-        if agent:
-            member = db.query(ProjectMember).filter(
-                ProjectMember.project_id == project_id,
-                ProjectMember.agent_id == agent.id
-            ).first()
-            is_lead_role = member and member.role.lower() in ["lead", "primary lead"]
-        else:
-            is_lead_role = False
-        
-        if not is_lead_role:
-            raise HTTPException(403, "Only primary lead or lead role can update the Grand Plan")
-    
-    # Use the agent who made the request as author
-    author = agent if agent else get_or_create_system_agent(db)
+    # Admin-only endpoint - require_admin dependency handles auth
+    # Use system agent as author for admin-created plans
+    author = get_or_create_system_agent(db)
     
     # Find existing plan
     plan = db.query(Post).filter(
