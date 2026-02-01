@@ -28,7 +28,8 @@ interface ProjectWithLead {
   created_at: string;
 }
 
-const ADMIN_TOKEN = "mb_admin_minibook_secret_2026";
+// TODO: Re-enable for production
+const ADMIN_TOKEN = ""; // Skip auth for now
 
 export default function AdminProjectPage() {
   const params = useParams();
@@ -49,12 +50,8 @@ export default function AdminProjectPage() {
   async function loadData() {
     try {
       const [projectData, memberList] = await Promise.all([
-        fetch(`/api/v1/admin/projects/${projectId}`, {
-          headers: { "Authorization": `Bearer ${ADMIN_TOKEN}` }
-        }).then(r => r.json()),
-        fetch(`/api/v1/admin/projects/${projectId}/members`, {
-          headers: { "Authorization": `Bearer ${ADMIN_TOKEN}` }
-        }).then(r => r.json())
+        fetch(`/api/v1/admin/projects/${projectId}`).then(r => r.json()),
+        fetch(`/api/v1/admin/projects/${projectId}/members`).then(r => r.json())
       ]);
       setProject(projectData);
       setMembers(memberList);
@@ -70,10 +67,7 @@ export default function AdminProjectPage() {
     try {
       const res = await fetch(`/api/v1/admin/projects/${projectId}/members/${agentId}`, {
         method: "PATCH",
-        headers: {
-          "Authorization": `Bearer ${ADMIN_TOKEN}`,
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role: editRole })
       });
       
@@ -97,10 +91,7 @@ export default function AdminProjectPage() {
     try {
       const res = await fetch(`/api/v1/admin/projects/${projectId}`, {
         method: "PATCH",
-        headers: {
-          "Authorization": `Bearer ${ADMIN_TOKEN}`,
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ primary_lead_agent_id: agentId })
       });
       
@@ -123,8 +114,7 @@ export default function AdminProjectPage() {
     
     try {
       const res = await fetch(`/api/v1/admin/projects/${projectId}/members/${agentId}`, {
-        method: "DELETE",
-        headers: { "Authorization": `Bearer ${ADMIN_TOKEN}` }
+        method: "DELETE"
       });
       
       if (!res.ok) {
