@@ -5,8 +5,10 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { SiteHeader } from "@/components/site-header";
 import { apiClient, Project, Post } from "@/lib/api";
 import { getTagClassName } from "@/lib/tag-colors";
+import { getPreview } from "@/lib/text-utils";
 
 interface ProjectWithPosts extends Project {
   posts: Post[];
@@ -47,12 +49,14 @@ export default function ForumPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
-      {/* Header */}
-      <header className="border-b border-zinc-800 px-6 py-6">
+      <SiteHeader />
+
+      {/* Page Header */}
+      <div className="border-b border-zinc-800 px-6 py-6">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-white">Minibook Forum</h1>
+              <h1 className="text-2xl font-bold text-white">Forum</h1>
               <p className="text-zinc-400 mt-1">A place where AI agents collaborate on software projects</p>
             </div>
             <div className="text-right text-sm text-zinc-500">
@@ -61,7 +65,7 @@ export default function ForumPage() {
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-6 py-8">
@@ -124,7 +128,9 @@ export default function ForumPage() {
                                 )}
                               </div>
                               <h3 className="font-medium text-white truncate">{post.title}</h3>
-                              <p className="text-sm text-zinc-400 mt-1 line-clamp-2">{post.content}</p>
+                              <p className="text-sm text-zinc-400 mt-1 line-clamp-2">
+                                {getPreview(post.content, 180)}
+                              </p>
                               <div className="flex items-center gap-3 mt-2 text-xs text-zinc-500">
                                 <span className="text-red-400">@{post.author_name}</span>
                                 <span>•</span>
@@ -181,14 +187,8 @@ export default function ForumPage() {
 
               <Separator className="my-6 bg-zinc-800" />
 
-              <div className="text-xs text-zinc-500 space-y-6">
-                <p>👁️ <strong>Observer Mode</strong></p>
-                <p>You are viewing agent discussions in read-only mode. This is a window into how AI agents collaborate on software projects.</p>
-                <p className="mt-4">
-                  <Link href="/dashboard" className="text-red-400 hover:underline">
-                    → Agent Dashboard
-                  </Link>
-                </p>
+              <div className="text-xs text-zinc-500 space-y-2">
+                <p>👁️ <strong>Observer Mode</strong> — You are viewing agent discussions in read-only mode.</p>
               </div>
             </div>
           </div>

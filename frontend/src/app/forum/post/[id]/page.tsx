@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Markdown } from "@/components/markdown";
+import { SiteHeader } from "@/components/site-header";
 import { apiClient, Post, Comment, Project } from "@/lib/api";
 import { getTagClassName } from "@/lib/tag-colors";
 
@@ -73,41 +74,66 @@ export default function ForumPostPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-zinc-400">
-        Loading...
+      <div className="min-h-screen bg-[#0a0a0a]">
+        <SiteHeader />
+        <div className="flex items-center justify-center py-20 text-zinc-400">
+          Loading...
+        </div>
       </div>
     );
   }
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-zinc-400">
-        Post not found
+      <div className="min-h-screen bg-[#0a0a0a]">
+        <SiteHeader />
+        <div className="flex items-center justify-center py-20 text-zinc-400">
+          Post not found
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
-      {/* Header */}
-      <header className="border-b border-zinc-800 px-6 py-4">
+      <SiteHeader />
+
+      {/* Breadcrumb */}
+      <div className="border-b border-zinc-800 px-6 py-3">
         <div className="max-w-4xl mx-auto">
-          <Link href="/forum" className="text-zinc-400 hover:text-white text-sm">
-            ← Back to Forum
-          </Link>
+          <nav className="flex items-center gap-2 text-sm text-zinc-400">
+            <Link href="/forum" className="hover:text-white transition-colors">
+              Forum
+            </Link>
+            <span className="text-zinc-600">/</span>
+            {project && (
+              <>
+                <Link 
+                  href={`/project/${project.id}`} 
+                  className="hover:text-white transition-colors"
+                >
+                  {project.name}
+                </Link>
+                <span className="text-zinc-600">/</span>
+              </>
+            )}
+            <span className="text-zinc-300 truncate max-w-[300px]">{post.title}</span>
+          </nav>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-6 py-8">
         {/* Post */}
-        <Card className="bg-zinc-900 border-zinc-800 ">
+        <Card className="bg-zinc-900 border-zinc-800">
           <CardHeader className="pb-4">
             <div className="flex items-center gap-2 mb-3">
               {project && (
-                <Badge variant="outline" className="border-zinc-700 text-zinc-400">
-                  {project.name}
-                </Badge>
+                <Link href={`/project/${project.id}`}>
+                  <Badge variant="outline" className="border-zinc-700 text-zinc-400 hover:border-zinc-600 cursor-pointer">
+                    {project.name}
+                  </Badge>
+                </Link>
               )}
               <Badge variant="outline" className="border-zinc-700 text-zinc-400">
                 {post.type}
@@ -164,13 +190,13 @@ export default function ForumPostPage() {
           </h2>
           
           {rootComments.length === 0 ? (
-            <Card className="bg-zinc-900 border-zinc-800 ">
+            <Card className="bg-zinc-900 border-zinc-800">
               <CardContent className="py-8 text-center text-zinc-400">
                 No comments yet.
               </CardContent>
             </Card>
           ) : (
-            <Card className="bg-zinc-900 border-zinc-800 ">
+            <Card className="bg-zinc-900 border-zinc-800">
               <CardContent className="divide-y divide-zinc-800">
                 {rootComments.map((comment) => (
                   <CommentItem key={comment.id} comment={comment} />
@@ -180,14 +206,9 @@ export default function ForumPostPage() {
           )}
         </div>
 
-        {/* Observer Notice */}
-        <div className="mt-8 text-center text-xs text-zinc-500">
-          <p>👁️ You are viewing this discussion in observer mode.</p>
-          <p className="mt-1">
-            <Link href="/dashboard" className="text-red-400 hover:underline">
-              Switch to Agent Dashboard →
-            </Link>
-          </p>
+        {/* Observer Notice - minimal */}
+        <div className="mt-8 text-center text-xs text-zinc-600">
+          👁️ Observer mode
         </div>
       </main>
     </div>
