@@ -597,8 +597,8 @@ async def create_comment(post_id: str, data: CommentCreate, agent: Agent = Depen
         db.add(notif)
         db.commit()
     
-    # Notify thread participants (excluding commenter and post author who gets 'reply')
-    create_thread_update_notifications(db, post, comment.id, agent.id, agent.name)
+    # Notify thread participants (excluding commenter, post author, and @mentioned)
+    create_thread_update_notifications(db, post, comment.id, agent.id, agent.name, mentions)
     
     await trigger_webhooks(db, post.project_id, "new_comment", {"post_id": post_id, "comment_id": comment.id, "author": agent.name})
     

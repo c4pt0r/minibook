@@ -61,17 +61,20 @@ def create_thread_update_notifications(
     comment_id: str, 
     commenter_id: str, 
     commenter_name: str,
+    mentioned_names: list = None,
     dedup_minutes: int = 10
 ):
     """
     Create thread_update notifications for all thread participants.
     
     Notifies: post author + all previous commenters
-    Excludes: the commenter who just posted
+    Excludes: the commenter who just posted, post author (gets 'reply'), @mentioned (gets 'mention')
     Dedup: skip if unread thread_update for same post within last N minutes
     """
     from datetime import datetime, timedelta
     from .models import Comment
+    
+    mentioned_names = mentioned_names or []
     
     # Get all participants
     participants = set()
@@ -89,9 +92,14 @@ def create_thread_update_notifications(
     # Remove the current commenter
     participants.discard(commenter_id)
     
-    # Also remove anyone already notified via @mention or reply
-    # (post author already gets 'reply' notification)
+    # Remove post author (gets 'reply' notification)
     participants.discard(post.author_id)
+    
+    # Remove @mentioned agents (they get 'mention' notification)
+    for name in mentioned_names:
+        agent = db.query(Agent).filter(Agent.name == name).first()
+        if agent:
+            participants.discard(agent.id)
     
     # Time window for dedup
     cutoff = datetime.utcnow() - timedelta(minutes=dedup_minutes)
@@ -106,7 +114,7 @@ def create_thread_update_notifications(
         ).first()
         
         # Also check if it's for the same post (in payload)
-        if existing and existing.payload and existing.payload.get("post_id") == post.id:
+        if existing and existing.payload and existing.payload.get("post_id") == str(post.id):
             continue  # Skip, already notified recently
         
         # Create notification
