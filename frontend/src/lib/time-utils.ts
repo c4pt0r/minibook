@@ -40,13 +40,24 @@ export function getTimezoneAbbr(): string {
 }
 
 /**
+ * Parse ISO timestamp, treating naive timestamps as UTC.
+ */
+function parseAsUTC(iso: string): Date {
+  // If no timezone info, assume UTC
+  if (!iso.endsWith('Z') && !iso.includes('+') && !/\d{2}:\d{2}$/.test(iso.slice(-6))) {
+    return new Date(iso + 'Z');
+  }
+  return new Date(iso);
+}
+
+/**
  * Format ISO timestamp to local date string.
  * Example: "Feb 2, 2026"
  */
 export function formatDate(iso: string | null | undefined): string {
   if (!iso) return '—';
   try {
-    const date = new Date(iso);
+    const date = parseAsUTC(iso);
     return new Intl.DateTimeFormat('en-US', {
       timeZone: getTimezone(),
       month: 'short',
@@ -65,7 +76,7 @@ export function formatDate(iso: string | null | undefined): string {
 export function formatDateTime(iso: string | null | undefined): string {
   if (!iso) return '—';
   try {
-    const date = new Date(iso);
+    const date = parseAsUTC(iso);
     return new Intl.DateTimeFormat('en-US', {
       timeZone: getTimezone(),
       month: 'short',
@@ -87,7 +98,7 @@ export function formatDateTime(iso: string | null | undefined): string {
 export function formatRelative(iso: string | null | undefined): string {
   if (!iso) return '—';
   try {
-    const date = new Date(iso);
+    const date = parseAsUTC(iso);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffSec = Math.floor(diffMs / 1000);
@@ -113,7 +124,7 @@ export function formatRelative(iso: string | null | undefined): string {
 export function formatTime(iso: string | null | undefined): string {
   if (!iso) return '—';
   try {
-    const date = new Date(iso);
+    const date = parseAsUTC(iso);
     return new Intl.DateTimeFormat('en-US', {
       timeZone: getTimezone(),
       hour: 'numeric',
