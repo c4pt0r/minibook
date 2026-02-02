@@ -4,8 +4,11 @@
 
 :root {
   --radius: 0.5rem;
-  
-  /* Light theme (default) - using hex for pure colors */
+}
+
+/* Tailwind v4 theme - defines utility classes */
+@theme inline {
+  /* Light theme (default) */
   --color-background: #ffffff;
   --color-foreground: #171717;
   --color-card: #ffffff;
@@ -38,47 +41,45 @@
   --color-sidebar-accent-foreground: #171717;
   --color-sidebar-border: #e5e5e5;
   --color-sidebar-ring: #dc2626;
-}
 
-/* Dark theme */
-.dark {
-  --color-background: oklch(0.07 0 0);
-  --color-foreground: oklch(0.93 0 0);
-  --color-card: oklch(0.12 0 0);
-  --color-card-foreground: oklch(0.93 0 0);
-  --color-popover: oklch(0.12 0 0);
-  --color-popover-foreground: oklch(0.93 0 0);
-  --color-primary: oklch(0.65 0.2 15);
-  --color-primary-foreground: oklch(0.98 0 0);
-  --color-secondary: oklch(0.2 0 0);
-  --color-secondary-foreground: oklch(0.93 0 0);
-  --color-muted: oklch(0.2 0 0);
-  --color-muted-foreground: oklch(0.6 0 0);
-  --color-accent: oklch(0.2 0 0);
-  --color-accent-foreground: oklch(0.93 0 0);
-  --color-destructive: oklch(0.55 0.2 25);
-  --color-destructive-foreground: oklch(0.98 0 0);
-  --color-border: oklch(0.25 0 0);
-  --color-input: oklch(0.25 0 0);
-  --color-ring: oklch(0.65 0.2 15);
-  --color-chart-1: oklch(0.65 0.2 15);
-  --color-chart-2: oklch(0.6 0.15 150);
-  --color-chart-3: oklch(0.55 0.15 250);
-  --color-chart-4: oklch(0.65 0.15 50);
-  --color-chart-5: oklch(0.6 0.2 300);
-  --color-sidebar: oklch(0.1 0 0);
-  --color-sidebar-foreground: oklch(0.93 0 0);
-  --color-sidebar-primary: oklch(0.65 0.2 15);
-  --color-sidebar-primary-foreground: oklch(0.98 0 0);
-  --color-sidebar-accent: oklch(0.2 0 0);
-  --color-sidebar-accent-foreground: oklch(0.93 0 0);
-  --color-sidebar-border: oklch(0.25 0 0);
-  --color-sidebar-ring: oklch(0.65 0.2 15);
-}
-
-@theme inline {
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+/* Dark theme overrides */
+.dark {
+  --color-background: #0a0a0a;
+  --color-foreground: #fafafa;
+  --color-card: #171717;
+  --color-card-foreground: #fafafa;
+  --color-popover: #171717;
+  --color-popover-foreground: #fafafa;
+  --color-primary: #ef4444;
+  --color-primary-foreground: #fafafa;
+  --color-secondary: #262626;
+  --color-secondary-foreground: #fafafa;
+  --color-muted: #262626;
+  --color-muted-foreground: #a3a3a3;
+  --color-accent: #262626;
+  --color-accent-foreground: #fafafa;
+  --color-destructive: #dc2626;
+  --color-destructive-foreground: #fafafa;
+  --color-border: #262626;
+  --color-input: #262626;
+  --color-ring: #ef4444;
+  --color-chart-1: #ef4444;
+  --color-chart-2: #22c55e;
+  --color-chart-3: #3b82f6;
+  --color-chart-4: #eab308;
+  --color-chart-5: #a855f7;
+  --color-sidebar: #0a0a0a;
+  --color-sidebar-foreground: #fafafa;
+  --color-sidebar-primary: #ef4444;
+  --color-sidebar-primary-foreground: #fafafa;
+  --color-sidebar-accent: #262626;
+  --color-sidebar-accent-foreground: #fafafa;
+  --color-sidebar-border: #262626;
+  --color-sidebar-ring: #ef4444;
 }
 
 @keyframes accordion-down {
