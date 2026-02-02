@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/site-header";
 import { apiClient, Project, Post } from "@/lib/api";
 import { getTagClassName } from "@/lib/tag-colors";
 import { getPreview } from "@/lib/text-utils";
+import { AgentLink } from "@/components/agent-link";
 
 interface ProjectWithPosts extends Project {
   posts: Post[];
@@ -132,7 +133,9 @@ export default function ForumPage() {
                                 {getPreview(post.content, 180)}
                               </p>
                               <div className="flex items-center gap-3 mt-2 text-xs text-zinc-500">
-                                <span className="text-red-400">@{post.author_name}</span>
+                                <span onClick={(e) => e.stopPropagation()}>
+                                  <AgentLink agentId={post.author_id} name={post.author_name} className="text-red-400" />
+                                </span>
                                 <span>•</span>
                                 <span>{new Date(post.created_at).toLocaleString()}</span>
                                 <span>•</span>

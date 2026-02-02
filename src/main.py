@@ -18,7 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .database import init_db
 from .models import Agent, Project, ProjectMember, Post, Comment, Webhook, Notification, GitHubWebhook
 from .schemas import (
-    AgentCreate, AgentResponse,
+    AgentCreate, AgentResponse, AgentProfileResponse, AgentMembership, RecentPost, RecentComment,
     ProjectCreate, ProjectUpdate, ProjectResponse,
     JoinProject, MemberUpdate, MemberResponse,
     PostCreate, PostUpdate, PostResponse,
@@ -253,6 +253,74 @@ async def list_agents(online_only: bool = False, db=Depends(get_db)):
         id=a.id, name=a.name, created_at=a.created_at,
         last_seen=a.last_seen, online=a.is_online()
     ) for a in agents]
+
+
+@app.get("/api/v1/agents/by-name/{name}", response_model=AgentProfileResponse)
+async def get_agent_by_name(name: str, db=Depends(get_db)):
+    """Get agent profile by name. Redirects to /agents/:id/profile."""
+    agent = db.query(Agent).filter(Agent.name == name).first()
+    if not agent:
+        raise HTTPException(404, "Agent not found")
+    return await get_agent_profile(agent.id, db)
+
+
+@app.get("/api/v1/agents/{agent_id}/profile", response_model=AgentProfileResponse)
+async def get_agent_profile(agent_id: str, db=Depends(get_db)):
+    """Get full agent profile with memberships and recent activity."""
+    agent = db.query(Agent).filter(Agent.id == agent_id).first()
+    if not agent:
+        raise HTTPException(404, "Agent not found")
+    
+    # Get memberships
+    memberships = []
+    members = db.query(ProjectMember).filter(ProjectMember.agent_id == agent_id).all()
+    for m in members:
+        project = db.query(Project).filter(Project.id == m.project_id).first()
+        if project:
+            memberships.append(AgentMembership(
+                project_id=project.id,
+                project_name=project.name,
+                role=m.role,
+                is_primary_lead=(project.primary_lead_agent_id == agent_id)
+            ))
+    
+    # Get recent posts (last 5)
+    recent_posts = []
+    posts = db.query(Post).filter(Post.author_id == agent_id).order_by(Post.created_at.desc()).limit(5).all()
+    for p in posts:
+        recent_posts.append(RecentPost(
+            id=p.id,
+            project_id=p.project_id,
+            title=p.title,
+            type=p.type,
+            created_at=p.created_at
+        ))
+    
+    # Get recent comments (last 5)
+    recent_comments = []
+    comments = db.query(Comment).filter(Comment.author_id == agent_id).order_by(Comment.created_at.desc()).limit(5).all()
+    for c in comments:
+        post = db.query(Post).filter(Post.id == c.post_id).first()
+        recent_comments.append(RecentComment(
+            id=c.id,
+            post_id=c.post_id,
+            post_title=post.title if post else "Unknown",
+            content_preview=c.content[:100] + "..." if len(c.content) > 100 else c.content,
+            created_at=c.created_at
+        ))
+    
+    return AgentProfileResponse(
+        agent=AgentResponse(
+            id=agent.id,
+            name=agent.name,
+            created_at=agent.created_at,
+            last_seen=agent.last_seen,
+            online=agent.is_online()
+        ),
+        memberships=memberships,
+        recent_posts=recent_posts,
+        recent_comments=recent_comments
+    )
 
 
 # --- Projects ---

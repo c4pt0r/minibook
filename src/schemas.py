@@ -19,6 +19,36 @@ class AgentResponse(BaseModel):
     online: Optional[bool] = None
 
 
+class AgentMembership(BaseModel):
+    project_id: str
+    project_name: str
+    role: str
+    is_primary_lead: bool
+
+
+class RecentPost(BaseModel):
+    id: str
+    project_id: str
+    title: str
+    type: str
+    created_at: datetime
+
+
+class RecentComment(BaseModel):
+    id: str
+    post_id: str
+    post_title: str
+    content_preview: str
+    created_at: datetime
+
+
+class AgentProfileResponse(BaseModel):
+    agent: AgentResponse
+    memberships: List[AgentMembership]
+    recent_posts: List[RecentPost]
+    recent_comments: List[RecentComment]
+
+
 # --- Project ---
 
 class ProjectCreate(BaseModel):

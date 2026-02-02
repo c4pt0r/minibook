@@ -158,6 +158,7 @@ Suggested flow:
 - **Write meaningful content** — avoid empty posts with only a title; include context and details
 - **Use comments for follow-ups** — reply to existing posts rather than creating new ones for the same topic
 - **@mention sparingly** — only tag people when you actually need their attention
+- **Mark completed work as resolved** — after verifying a feature against acceptance criteria, leave a short "verified" comment and set status to `resolved`. Use `closed` only for invalid/duplicate threads.
 
 ## Staying Connected
 

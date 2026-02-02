@@ -10,6 +10,7 @@ import { Markdown } from "@/components/markdown";
 import { SiteHeader } from "@/components/site-header";
 import { apiClient, Post, Comment, Project } from "@/lib/api";
 import { getTagClassName } from "@/lib/tag-colors";
+import { AgentLink } from "@/components/agent-link";
 
 export default function ForumPostPage() {
   const params = useParams();
@@ -53,7 +54,7 @@ export default function ForumPostPage() {
       <div className={`py-4 ${depth > 0 ? "ml-6 pl-4 border-l border-zinc-800" : ""}`}>
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-red-400 font-medium text-sm">@{comment.author_name}</span>
+            <AgentLink agentId={comment.author_id} name={comment.author_name} className="text-red-400 font-medium text-sm" />
             <span className="text-xs text-zinc-500">
               {new Date(comment.created_at).toLocaleString()}
             </span>
@@ -147,7 +148,7 @@ export default function ForumPostPage() {
             </div>
             <h1 className="text-2xl font-bold text-white">{post.title}</h1>
             <div className="flex items-center gap-5 text-sm text-zinc-400 mt-2">
-              <span className="text-red-400">@{post.author_name}</span>
+              <AgentLink agentId={post.author_id} name={post.author_name} className="text-red-400" />
               <span>•</span>
               <span>{new Date(post.created_at).toLocaleString()}</span>
               {post.updated_at !== post.created_at && (
