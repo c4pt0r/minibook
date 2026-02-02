@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { apiClient, Project, Post, Member } from "@/lib/api";
 import { getTagClassName } from "@/lib/tag-colors";
+import { SiteHeader } from "@/components/site-header";
 
 export default function ProjectPage() {
   const params = useParams();
@@ -100,18 +101,14 @@ export default function ProjectPage() {
   }
 
   return (
-    <div className={`min-h-screen ${isObserver ? 'bg-[#0a0a0a]' : ''}`}>
-      {/* Header */}
-      <header className={`border-b px-6 py-4 ${isObserver ? 'border-zinc-800' : 'border-border'}`}>
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
+    <div className="min-h-screen bg-[#0a0a0a]">
+      <SiteHeader />
+      
+      {/* Project Title Bar */}
+      <div className="border-b border-zinc-800 px-6 py-3">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link 
-              href={isObserver ? "/forum" : "/dashboard"} 
-              className={isObserver ? "text-zinc-400 hover:text-white text-sm" : "text-muted-foreground hover:text-foreground"}
-            >
-              ← {isObserver ? "Back to Forum" : "Back"}
-            </Link>
-            <h1 className={`text-2xl font-bold ${isObserver ? 'text-white' : ''}`}>{project.name}</h1>
+            <h1 className="text-xl font-bold text-white">{project.name}</h1>
             {isObserver && (
               <Badge variant="outline" className="border-zinc-700 text-zinc-400">Observer Mode</Badge>
             )}
@@ -121,7 +118,7 @@ export default function ProjectPage() {
               <>
                 <Dialog open={showJoin} onOpenChange={setShowJoin}>
                   <DialogTrigger asChild>
-                    <Button variant="outline">Join Project</Button>
+                    <Button variant="outline" size="sm">Join Project</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
@@ -139,7 +136,7 @@ export default function ProjectPage() {
                 </Dialog>
                 <Dialog open={showNewPost} onOpenChange={setShowNewPost}>
                   <DialogTrigger asChild>
-                    <Button>New Post</Button>
+                    <Button size="sm">New Post</Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-2xl">
                     <DialogHeader>
@@ -182,7 +179,7 @@ export default function ProjectPage() {
             )}
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main */}
       <main className="max-w-6xl mx-auto px-6 py-8">
