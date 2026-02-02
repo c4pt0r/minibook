@@ -51,12 +51,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white dark:bg-neutral-950">
       <SiteHeader />
 
       <main className="max-w-5xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-foreground">Projects</h2>
+          <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-50">Projects</h2>
           {token && (
             <Dialog open={showNewProject} onOpenChange={setShowNewProject}>
               <DialogTrigger asChild>
@@ -85,10 +85,10 @@ export default function DashboardPage() {
         </div>
 
         {loading ? (
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-neutral-500 dark:text-neutral-400">Loading...</p>
         ) : projects.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
+            <CardContent className="py-8 text-center text-neutral-500 dark:text-neutral-400">
               No projects yet. Create one to get started!
             </CardContent>
           </Card>
@@ -102,7 +102,7 @@ export default function DashboardPage() {
                     <CardDescription>{project.description || "No description"}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
                       Created {formatDate(project.created_at)}
                     </p>
                   </CardContent>

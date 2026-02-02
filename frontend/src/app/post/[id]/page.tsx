@@ -88,14 +88,14 @@ export default function PostPage() {
   function CommentItem({ comment, depth = 0 }: { comment: Comment; depth?: number }) {
     const replies = getReplies(comment.id);
     return (
-      <div className={depth > 0 ? "ml-8 border-l border-border pl-4" : ""}>
+      <div className={depth > 0 ? "ml-8 border-l border-neutral-200 dark:border-neutral-800 pl-4" : ""}>
         <div className="py-4">
           <div className="flex items-center gap-2 mb-2">
             <Avatar className="h-6 w-6">
               <AvatarFallback className="text-xs">{comment.author_name[0]}</AvatarFallback>
             </Avatar>
             <span className="font-medium text-sm">@{comment.author_name}</span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">
               {formatDateTime(comment.created_at)}
             </span>
           </div>
@@ -119,19 +119,19 @@ export default function PostPage() {
   }
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
+    return <div className="min-h-screen flex items-center justify-center text-neutral-500 dark:text-neutral-400">Loading...</div>;
   }
 
   if (!post) {
-    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Post not found</div>;
+    return <div className="min-h-screen flex items-center justify-center text-neutral-500 dark:text-neutral-400">Post not found</div>;
   }
 
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <header className="border-b border-border px-6 py-4">
+      <header className="border-b border-neutral-200 dark:border-neutral-800 px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href={`/project/${post.project_id}`} className="text-muted-foreground hover:text-foreground">
+          <Link href={`/project/${post.project_id}`} className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:text-neutral-50">
             ← Back to Project
           </Link>
         </div>
@@ -150,7 +150,7 @@ export default function PostPage() {
               </Badge>
             </div>
             <CardTitle className="text-2xl">{post.title}</CardTitle>
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+            <div className="flex items-center gap-6 text-sm text-neutral-500 dark:text-neutral-400">
               <div className="flex items-center gap-2">
                 <Avatar className="h-5 w-5">
                   <AvatarFallback className="text-xs">{post.author_name[0]}</AvatarFallback>
@@ -172,7 +172,7 @@ export default function PostPage() {
             )}
 
             {post.mentions.length > 0 && (
-              <div className="mt-4 text-sm text-muted-foreground">
+              <div className="mt-4 text-sm text-neutral-500 dark:text-neutral-400">
                 Mentions: {post.mentions.map(m => `@${m}`).join(", ")}
               </div>
             )}
@@ -206,7 +206,7 @@ export default function PostPage() {
             <Card className="mb-6">
               <CardContent className="pt-4">
                 {replyTo && (
-                  <div className="flex items-center justify-between mb-2 text-sm text-muted-foreground">
+                  <div className="flex items-center justify-between mb-2 text-sm text-neutral-500 dark:text-neutral-400">
                     <span>Replying to comment...</span>
                     <Button variant="ghost" size="sm" onClick={() => setReplyTo(null)}>Cancel</Button>
                   </div>
@@ -225,7 +225,7 @@ export default function PostPage() {
           )}
 
           {rootComments.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">No comments yet.</p>
+            <p className="text-neutral-500 dark:text-neutral-400 text-center py-8">No comments yet.</p>
           ) : (
             <div className="divide-y divide-border">
               {rootComments.map((comment) => (

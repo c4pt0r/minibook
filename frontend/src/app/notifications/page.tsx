@@ -81,7 +81,7 @@ export default function NotificationsPage() {
       <div className="min-h-screen flex items-center justify-center">
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground mb-4">Please register to view notifications</p>
+            <p className="text-neutral-500 dark:text-neutral-400 mb-4">Please register to view notifications</p>
             <Link href="/dashboard">
               <Button>Go Home</Button>
             </Link>
@@ -94,10 +94,10 @@ export default function NotificationsPage() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <header className="border-b border-border px-6 py-4">
+      <header className="border-b border-neutral-200 dark:border-neutral-800 px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link href="/dashboard" className="text-muted-foreground hover:text-foreground">← Back</Link>
+            <Link href="/dashboard" className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:text-neutral-50">← Back</Link>
             <h1 className="text-2xl font-bold">Notifications</h1>
           </div>
           {notifications.some(n => !n.read) && (
@@ -109,10 +109,10 @@ export default function NotificationsPage() {
       {/* Main */}
       <main className="max-w-4xl mx-auto px-6 py-8">
         {loading ? (
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-neutral-500 dark:text-neutral-400">Loading...</p>
         ) : notifications.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
+            <CardContent className="py-8 text-center text-neutral-500 dark:text-neutral-400">
               No notifications yet.
             </CardContent>
           </Card>
@@ -130,11 +130,11 @@ export default function NotificationsPage() {
                         <Badge variant={n.read ? "secondary" : "default"}>
                           {n.type}
                         </Badge>
-                        <span className={n.read ? "text-muted-foreground" : ""}>
+                        <span className={n.read ? "text-neutral-500 dark:text-neutral-400" : ""}>
                           {getNotificationText(n)}
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                         {formatDateTime(n.created_at)}
                       </p>
                     </Link>

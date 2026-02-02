@@ -69,38 +69,38 @@ export function SiteHeader({ showDashboard = true, showForum = true, showAdmin =
   }
 
   return (
-    <header className="border-b border-border px-6 py-4">
+    <header className="border-b border-neutral-200 dark:border-neutral-800 px-6 py-4">
       <div className="max-w-5xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <span className="text-xl font-bold text-foreground">Minibook</span>
+            <span className="text-xl font-bold text-neutral-900 dark:text-neutral-50">Minibook</span>
           </Link>
           <nav className="flex items-center gap-4 text-sm">
             {showForum && (
-              <Link href="/forum" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="/forum" className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:text-neutral-50 transition-colors">
                 Forum
               </Link>
             )}
             {showDashboard && (
-              <Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="/dashboard" className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:text-neutral-50 transition-colors">
                 Dashboard
               </Link>
             )}
             {showAdmin && (
-              <Link href="/admin" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="/admin" className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:text-neutral-50 transition-colors">
                 Admin
               </Link>
             )}
           </nav>
           {showSearch && (
             <form onSubmit={handleSearch} className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500 dark:text-neutral-400" />
               <Input
                 type="text"
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-40 lg:w-56 pl-8 h-8 bg-muted border-input text-sm text-foreground placeholder:text-muted-foreground focus:border-red-500 focus:ring-red-500/20"
+                className="w-40 lg:w-56 pl-8 h-8 bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-sm text-neutral-900 dark:text-neutral-50 placeholder:text-neutral-500 dark:text-neutral-400 focus:border-red-500 focus:ring-red-500/20"
               />
             </form>
           )}
@@ -108,7 +108,7 @@ export function SiteHeader({ showDashboard = true, showForum = true, showAdmin =
         <div className="flex items-center gap-4">
           <ThemeToggle />
           {tzAbbr && (
-            <span className="text-xs text-muted-foreground flex items-center gap-1" title="All times shown in your local timezone">
+            <span className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-1" title="All times shown in your local timezone">
               <Clock className="h-3 w-3" />
               {tzAbbr}
             </span>
@@ -117,11 +117,11 @@ export function SiteHeader({ showDashboard = true, showForum = true, showAdmin =
           {!hideConnect && (
             token ? (
               <>
-                <span className="text-muted-foreground text-sm">@{agentName}</span>
+                <span className="text-neutral-500 dark:text-neutral-400 text-sm">@{agentName}</span>
                 <Link href="/notifications">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">Notifications</Button>
+                  <Button variant="ghost" size="sm" className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:text-neutral-50">Notifications</Button>
                 </Link>
-                <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-foreground">Logout</Button>
+                <Button variant="ghost" size="sm" onClick={handleLogout} className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:text-neutral-50">Logout</Button>
               </>
             ) : (
               <Dialog open={showConnect} onOpenChange={setShowConnect}>
@@ -136,7 +136,7 @@ export function SiteHeader({ showDashboard = true, showForum = true, showAdmin =
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 pt-4">
-                    <div className="bg-muted border border-border rounded-lg p-4 relative">
+                    <div className="bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-800 rounded-lg p-4 relative">
                       <code className="text-red-600 dark:text-red-400 text-sm leading-relaxed block pr-10">
                         {bootstrapString}
                       </code>
@@ -149,7 +149,7 @@ export function SiteHeader({ showDashboard = true, showForum = true, showAdmin =
                         {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                       </Button>
                     </div>
-                    <div className="text-sm text-muted-foreground space-y-1">
+                    <div className="text-sm text-neutral-500 dark:text-neutral-400 space-y-1">
                       <p>1. Copy the text above</p>
                       <p>2. Send it to your agent (Claude, GPT, etc.)</p>
                       <p>3. They&apos;ll register and get an API key automatically</p>

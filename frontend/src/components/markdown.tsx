@@ -30,13 +30,13 @@ export function Markdown({ content, className = "", mentions = [] }: MarkdownPro
       <ReactMarkdown
         components={{
           // Style overrides for dark theme
-          h1: ({ children }) => <h1 className="text-xl font-bold text-foreground mt-4 mb-2">{children}</h1>,
-          h2: ({ children }) => <h2 className="text-lg font-semibold text-foreground mt-3 mb-2">{children}</h2>,
-          h3: ({ children }) => <h3 className="text-base font-medium text-foreground mt-2 mb-1">{children}</h3>,
-          p: ({ children }) => <p className="text-card-foreground mb-3 leading-relaxed">{children}</p>,
-          ul: ({ children }) => <ul className="list-disc list-inside text-card-foreground mb-3 space-y-1">{children}</ul>,
-          ol: ({ children }) => <ol className="list-decimal list-inside text-card-foreground mb-3 space-y-1">{children}</ol>,
-          li: ({ children }) => <li className="text-card-foreground">{children}</li>,
+          h1: ({ children }) => <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-50 mt-4 mb-2">{children}</h1>,
+          h2: ({ children }) => <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50 mt-3 mb-2">{children}</h2>,
+          h3: ({ children }) => <h3 className="text-base font-medium text-neutral-900 dark:text-neutral-50 mt-2 mb-1">{children}</h3>,
+          p: ({ children }) => <p className="text-neutral-900 dark:text-neutral-50 mb-3 leading-relaxed">{children}</p>,
+          ul: ({ children }) => <ul className="list-disc list-inside text-neutral-900 dark:text-neutral-50 mb-3 space-y-1">{children}</ul>,
+          ol: ({ children }) => <ol className="list-decimal list-inside text-neutral-900 dark:text-neutral-50 mb-3 space-y-1">{children}</ol>,
+          li: ({ children }) => <li className="text-neutral-900 dark:text-neutral-50">{children}</li>,
           a: ({ href, children }) => (
             <a href={href} className="text-red-400 hover:underline" target="_blank" rel="noopener noreferrer">
               {children}
@@ -45,30 +45,30 @@ export function Markdown({ content, className = "", mentions = [] }: MarkdownPro
           code: ({ className, children }) => {
             const isInline = !className;
             if (isInline) {
-              return <code className="bg-muted text-red-300 px-1.5 py-0.5 rounded text-sm">{children}</code>;
+              return <code className="bg-neutral-100 dark:bg-neutral-800 text-red-300 px-1.5 py-0.5 rounded text-sm">{children}</code>;
             }
             return (
-              <code className="block bg-muted p-3 rounded-lg overflow-x-auto text-sm text-card-foreground">
+              <code className="block bg-neutral-100 dark:bg-neutral-800 p-3 rounded-lg overflow-x-auto text-sm text-neutral-900 dark:text-neutral-50">
                 {children}
               </code>
             );
           },
-          pre: ({ children }) => <pre className="bg-muted p-3 rounded-lg overflow-x-auto mb-3">{children}</pre>,
+          pre: ({ children }) => <pre className="bg-neutral-100 dark:bg-neutral-800 p-3 rounded-lg overflow-x-auto mb-3">{children}</pre>,
           blockquote: ({ children }) => (
-            <blockquote className="border-l-2 border-red-500 pl-4 text-muted-foreground italic my-3">
+            <blockquote className="border-l-2 border-red-500 pl-4 text-neutral-500 dark:text-neutral-400 italic my-3">
               {children}
             </blockquote>
           ),
-          strong: ({ children }) => <strong className="text-foreground font-semibold">{children}</strong>,
-          em: ({ children }) => <em className="text-card-foreground italic">{children}</em>,
-          hr: () => <hr className="border-input my-4" />,
+          strong: ({ children }) => <strong className="text-neutral-900 dark:text-neutral-50 font-semibold">{children}</strong>,
+          em: ({ children }) => <em className="text-neutral-900 dark:text-neutral-50 italic">{children}</em>,
+          hr: () => <hr className="border-neutral-200 dark:border-neutral-700 my-4" />,
           table: ({ children }) => (
             <div className="overflow-x-auto mb-3">
-              <table className="min-w-full border border-input text-sm">{children}</table>
+              <table className="min-w-full border border-neutral-200 dark:border-neutral-700 text-sm">{children}</table>
             </div>
           ),
-          th: ({ children }) => <th className="border border-input px-3 py-2 bg-muted text-foreground">{children}</th>,
-          td: ({ children }) => <td className="border border-input px-3 py-2 text-card-foreground">{children}</td>,
+          th: ({ children }) => <th className="border border-neutral-200 dark:border-neutral-700 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-50">{children}</th>,
+          td: ({ children }) => <td className="border border-neutral-200 dark:border-neutral-700 px-3 py-2 text-neutral-900 dark:text-neutral-50">{children}</td>,
         }}
       >
         {content}
