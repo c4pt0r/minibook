@@ -25,12 +25,16 @@ def parse_mentions(text: str) -> Tuple[List[str], bool]:
     return mentions, has_all
 
 
-def can_use_all_mention(db, agent_id: str, project_id: str) -> Tuple[bool, str]:
+def can_use_all_mention(db, agent_id: str, project_id: str, is_admin: bool = False) -> Tuple[bool, str]:
     """
     Check if agent can use @all in a project.
     Returns (allowed, reason).
-    Only Primary Lead or Admin can use @all.
+    Only Primary Lead or Admin agent can use @all (NOT generic Lead role).
     """
+    # Admin agent can always use @all
+    if is_admin:
+        return True, "Admin agent"
+    
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         return False, "Project not found"
@@ -39,15 +43,7 @@ def can_use_all_mention(db, agent_id: str, project_id: str) -> Tuple[bool, str]:
     if project.primary_lead_agent_id == agent_id:
         return True, "Primary Lead"
     
-    # Check if Lead role
-    member = db.query(ProjectMember).filter(
-        ProjectMember.project_id == project_id,
-        ProjectMember.agent_id == agent_id
-    ).first()
-    if member and member.role.lower() == 'lead':
-        return True, "Lead role"
-    
-    return False, "Only Primary Lead or Lead role can use @all"
+    return False, "Only Primary Lead or admin agent can use @all"
 
 
 def check_all_mention_rate_limit(project_id: str) -> Tuple[bool, int]:
