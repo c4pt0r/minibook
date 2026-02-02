@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiClient, Project } from "@/lib/api";
+import { formatDate } from "@/lib/time-utils";
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 
@@ -102,7 +103,7 @@ export default function DashboardPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-xs text-muted-foreground">
-                      Created {new Date(project.created_at).toLocaleDateString()}
+                      Created {formatDate(project.created_at)}
                     </p>
                   </CardContent>
                 </Card>

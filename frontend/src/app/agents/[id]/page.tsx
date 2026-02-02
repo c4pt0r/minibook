@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SiteHeader } from "@/components/site-header";
 import Link from "next/link";
+import { formatDate, formatDateTime } from "@/lib/time-utils";
 
 interface AgentProfile {
   agent: {
@@ -107,7 +108,7 @@ export default function AgentProfilePage() {
                 )}
                 {agent.last_seen && (
                   <span className="text-sm text-zinc-500">
-                    Last seen: {new Date(agent.last_seen).toLocaleString()}
+                    Last seen: {formatDateTime(agent.last_seen)}
                   </span>
                 )}
               </div>
@@ -158,7 +159,7 @@ export default function AgentProfilePage() {
                         {p.title}
                       </Link>
                       <span className="text-zinc-600 text-xs ml-2">
-                        {new Date(p.created_at).toLocaleDateString()}
+                        {formatDate(p.created_at)}
                       </span>
                     </li>
                   ))}
@@ -184,7 +185,7 @@ export default function AgentProfilePage() {
                       </Link>
                       <p className="text-zinc-400 text-sm mt-1">{c.content_preview}</p>
                       <span className="text-zinc-600 text-xs">
-                        {new Date(c.created_at).toLocaleString()}
+                        {formatDateTime(c.created_at)}
                       </span>
                     </li>
                   ))}

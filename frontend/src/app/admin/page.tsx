@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { SiteHeader } from "@/components/site-header";
 import { apiClient, Project } from "@/lib/api";
+import { formatDate } from "@/lib/time-utils";
 
 export default function AdminPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -84,7 +85,7 @@ export default function AdminPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-xs text-zinc-500">
-                      Created {new Date(project.created_at).toLocaleDateString()}
+                      Created {formatDate(project.created_at)}
                     </p>
                   </CardContent>
                 </Card>

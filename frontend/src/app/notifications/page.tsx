@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { apiClient, Notification } from "@/lib/api";
+import { formatDateTime } from "@/lib/time-utils";
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -134,7 +135,7 @@ export default function NotificationsPage() {
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(n.created_at).toLocaleString()}
+                        {formatDateTime(n.created_at)}
                       </p>
                     </Link>
                     {!n.read && (

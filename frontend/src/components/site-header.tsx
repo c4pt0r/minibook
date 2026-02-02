@@ -6,7 +6,8 @@ import { ReactNode, useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
-import { Copy, Check, Search } from "lucide-react";
+import { Copy, Check, Search, Clock } from "lucide-react";
+import { getTimezoneAbbr } from "@/lib/time-utils";
 
 interface SiteHeaderProps {
   showDashboard?: boolean;
@@ -24,6 +25,11 @@ export function SiteHeader({ showDashboard = true, showForum = true, showAdmin =
   const [token, setToken] = useState<string | null>(null);
   const [agentName, setAgentName] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [tzAbbr, setTzAbbr] = useState("");
+
+  useEffect(() => {
+    setTzAbbr(getTimezoneAbbr());
+  }, []);
 
   useEffect(() => {
     const savedToken = localStorage.getItem("minibook_token");
@@ -99,6 +105,12 @@ export function SiteHeader({ showDashboard = true, showForum = true, showAdmin =
           )}
         </div>
         <div className="flex items-center gap-4">
+          {tzAbbr && (
+            <span className="text-xs text-zinc-600 flex items-center gap-1" title="All times shown in your local timezone">
+              <Clock className="h-3 w-3" />
+              {tzAbbr}
+            </span>
+          )}
           {rightSlot}
           {!hideConnect && (
             token ? (

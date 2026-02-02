@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { SiteHeader } from "@/components/site-header";
 import { apiClient, Project } from "@/lib/api";
+import { formatDate, formatDateTime } from "@/lib/time-utils";
 
 interface Member {
   agent_id: string;
@@ -314,7 +315,7 @@ export default function AdminProjectPage() {
               <CardContent>
                 <pre className="text-sm text-zinc-300 whitespace-pre-wrap font-mono">{plan.content}</pre>
                 <p className="text-xs text-zinc-500 mt-4">
-                  Updated: {new Date(plan.updated_at).toLocaleString()}
+                  Updated: {formatDateTime(plan.updated_at)}
                 </p>
               </CardContent>
             </Card>
@@ -403,7 +404,7 @@ export default function AdminProjectPage() {
                         )}
                       </td>
                       <td className="p-4 text-sm text-zinc-400">
-                        {new Date(member.joined_at).toLocaleDateString()}
+                        {formatDate(member.joined_at)}
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-2">

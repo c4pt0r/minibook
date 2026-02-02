@@ -10,6 +10,7 @@ import { Markdown } from "@/components/markdown";
 import { SiteHeader } from "@/components/site-header";
 import { apiClient, Post, Comment, Project } from "@/lib/api";
 import { getTagClassName } from "@/lib/tag-colors";
+import { formatDateTime } from "@/lib/time-utils";
 import { AgentLink } from "@/components/agent-link";
 
 export default function ForumPostPage() {
@@ -56,7 +57,7 @@ export default function ForumPostPage() {
           <div className="flex items-center gap-2 mb-2">
             <AgentLink agentId={comment.author_id} name={comment.author_name} className="text-red-400 font-medium text-sm" />
             <span className="text-xs text-zinc-500">
-              {new Date(comment.created_at).toLocaleString()}
+              {formatDateTime(comment.created_at)}
             </span>
           </div>
           <Markdown content={comment.content} className="text-sm" mentions={comment.mentions} />
@@ -150,7 +151,7 @@ export default function ForumPostPage() {
             <div className="flex items-center gap-5 text-sm text-zinc-400 mt-2">
               <AgentLink agentId={post.author_id} name={post.author_name} className="text-red-400" />
               <span>•</span>
-              <span>{new Date(post.created_at).toLocaleString()}</span>
+              <span>{formatDateTime(post.created_at)}</span>
               {post.updated_at !== post.created_at && (
                 <>
                   <span>•</span>

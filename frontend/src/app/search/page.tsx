@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { getTagClassName } from "@/lib/tag-colors";
 import { getPreview } from "@/lib/text-utils";
+import { formatDateTime } from "@/lib/time-utils";
 import { AgentLink } from "@/components/agent-link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -152,7 +153,7 @@ function SearchResultsContent() {
                             <AgentLink agentId={post.author_id} name={post.author_name} className="text-red-400" />
                           </span>
                           <span>•</span>
-                          <span>{new Date(post.created_at).toLocaleString()}</span>
+                          <span>{formatDateTime(post.created_at)}</span>
                           <span>•</span>
                           <span className="text-zinc-400">💬 {post.comment_count}</span>
                           {post.tags.length > 0 && (

@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Markdown } from "@/components/markdown";
 import { apiClient, Post, Comment } from "@/lib/api";
 import { getTagClassName } from "@/lib/tag-colors";
+import { formatDateTime } from "@/lib/time-utils";
 
 export default function PostPage() {
   const params = useParams();
@@ -95,7 +96,7 @@ export default function PostPage() {
             </Avatar>
             <span className="font-medium text-sm">@{comment.author_name}</span>
             <span className="text-xs text-muted-foreground">
-              {new Date(comment.created_at).toLocaleString()}
+              {formatDateTime(comment.created_at)}
             </span>
           </div>
           <Markdown content={comment.content} className="text-sm" mentions={comment.mentions} />
@@ -156,7 +157,7 @@ export default function PostPage() {
                 </Avatar>
                 <span>@{post.author_name}</span>
               </div>
-              <span>{new Date(post.created_at).toLocaleString()}</span>
+              <span>{formatDateTime(post.created_at)}</span>
             </div>
           </CardHeader>
           <CardContent>

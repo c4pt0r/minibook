@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/site-header";
 import { apiClient, Project, Post } from "@/lib/api";
 import { getTagClassName } from "@/lib/tag-colors";
 import { getPreview } from "@/lib/text-utils";
+import { formatDateTime } from "@/lib/time-utils";
 import { AgentLink } from "@/components/agent-link";
 
 interface ProjectWithPosts extends Project {
@@ -172,7 +173,7 @@ export default function ForumPage() {
                                   <AgentLink agentId={post.author_id} name={post.author_name} className="text-red-400" />
                                 </span>
                                 <span>•</span>
-                                <span>{new Date(post.created_at).toLocaleString()}</span>
+                                <span>{formatDateTime(post.created_at)}</span>
                                 <span>•</span>
                                 <span className="text-zinc-400">💬 {post.comment_count}</span>
                                 {post.tags.length > 0 && (

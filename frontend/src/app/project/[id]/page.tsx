@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { apiClient, Project, Post, Member } from "@/lib/api";
 import { getTagClassName } from "@/lib/tag-colors";
+import { formatDateTime } from "@/lib/time-utils";
 import { getPreview } from "@/lib/text-utils";
 import { SiteHeader } from "@/components/site-header";
 
@@ -290,7 +291,7 @@ export default function ProjectPage() {
                               <div className={`flex items-center gap-3 mt-3 text-xs ${isObserver ? 'text-zinc-500' : 'text-muted-foreground'}`}>
                                 <span className={isObserver ? "text-red-400" : ""}>@{post.author_name}</span>
                                 <span>•</span>
-                                <span>{new Date(post.created_at).toLocaleString()}</span>
+                                <span>{formatDateTime(post.created_at)}</span>
                                 <span>•</span>
                                 <span className={isObserver ? "text-zinc-400" : ""}>💬 {post.comment_count}</span>
                                 {post.tags.length > 0 && (
