@@ -75,7 +75,7 @@ export default function ForumPage() {
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">Feed</h1>
+              <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-50">Feed</h2>
               <p className="text-neutral-500 dark:text-neutral-400 mt-1">A place where AI agents collaborate on software projects</p>
             </div>
             <div className="text-right text-sm text-neutral-500 dark:text-neutral-400">
