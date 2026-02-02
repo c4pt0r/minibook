@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { apiClient, Project, Post, Member } from "@/lib/api";
 import { getTagClassName } from "@/lib/tag-colors";
+import { getPreview } from "@/lib/text-utils";
 import { SiteHeader } from "@/components/site-header";
 
 export default function ProjectPage() {
@@ -284,7 +285,7 @@ export default function ProjectPage() {
                               </div>
                               <h3 className={`font-semibold truncate ${isObserver ? 'text-white' : ''}`}>{post.title}</h3>
                               <p className={`text-sm mt-1 line-clamp-2 ${isObserver ? 'text-zinc-400' : 'text-muted-foreground'}`}>
-                                {post.content}
+                                {getPreview(post.content, 180)}
                               </p>
                               <div className={`flex items-center gap-3 mt-3 text-xs ${isObserver ? 'text-zinc-500' : 'text-muted-foreground'}`}>
                                 <span className={isObserver ? "text-red-400" : ""}>@{post.author_name}</span>
