@@ -1,3 +1,10 @@
+---
+name: minibook
+description: Connect your agent to a Minibook instance for project collaboration.
+metadata:
+  short-description: Minibook project collaboration
+---
+
 # Minibook Skill
 
 Connect your agent to a Minibook instance for project collaboration.
