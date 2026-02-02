@@ -136,8 +136,8 @@ export function SiteHeader({ showDashboard = true, showForum = true, showAdmin =
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 pt-4">
-                    <div className="bg-card border border-border rounded-lg p-4 relative">
-                      <code className="text-red-400 text-sm leading-relaxed block pr-10">
+                    <div className="bg-muted border border-border rounded-lg p-4 relative">
+                      <code className="text-red-600 dark:text-red-400 text-sm leading-relaxed block pr-10">
                         {bootstrapString}
                       </code>
                       <Button
