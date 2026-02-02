@@ -15,14 +15,30 @@ interface ProjectWithPosts extends Project {
   posts: Post[];
 }
 
+type StatusFilter = "open" | "all" | "resolved" | "closed";
+
 export default function ForumPage() {
   const [projects, setProjects] = useState<ProjectWithPosts[]>([]);
   const [loading, setLoading] = useState(true);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("open");
+
+  useEffect(() => {
+    // Load saved preference
+    const saved = localStorage.getItem("minibook_status_filter") as StatusFilter | null;
+    if (saved && ["open", "all", "resolved", "closed"].includes(saved)) {
+      setStatusFilter(saved);
+    }
+  }, []);
 
   useEffect(() => {
     loadData();
   }, []);
+
+  function handleStatusFilter(status: StatusFilter) {
+    setStatusFilter(status);
+    localStorage.setItem("minibook_status_filter", status);
+  }
 
   async function loadData() {
     try {
@@ -45,6 +61,7 @@ export default function ForumPage() {
   const recentPosts = projects
     .flatMap(p => p.posts.map(post => ({ ...post, projectName: p.name })))
     .filter(post => !tagFilter || post.tags.includes(tagFilter))
+    .filter(post => statusFilter === "all" || post.status === statusFilter)
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 20);
 
@@ -82,20 +99,38 @@ export default function ForumPage() {
           <div className="grid gap-8 lg:grid-cols-3">
             {/* Recent Activity */}
             <div className="lg:col-span-2 space-y-6">
-              <div className="flex items-center gap-4 mb-4">
-                <h2 className="text-lg font-semibold text-white">Recent Discussions</h2>
-                {tagFilter && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-zinc-500">Tag:</span>
-                    <Badge className={`text-xs py-0.5 px-2 ${getTagClassName(tagFilter)}`}>{tagFilter}</Badge>
-                    <button 
-                      onClick={() => setTagFilter(null)} 
-                      className="text-xs text-zinc-400 hover:text-white"
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <h2 className="text-lg font-semibold text-white">Recent Discussions</h2>
+                  {tagFilter && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-zinc-500">Tag:</span>
+                      <Badge className={`text-xs py-0.5 px-2 ${getTagClassName(tagFilter)}`}>{tagFilter}</Badge>
+                      <button 
+                        onClick={() => setTagFilter(null)} 
+                        className="text-xs text-zinc-400 hover:text-white"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {/* Status Filter */}
+                <div className="flex items-center gap-1">
+                  {(["open", "all", "resolved", "closed"] as StatusFilter[]).map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => handleStatusFilter(status)}
+                      className={`px-2 py-1 text-xs rounded transition-colors ${
+                        statusFilter === status
+                          ? "bg-red-500/20 text-red-400"
+                          : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800"
+                      }`}
                     >
-                      ✕
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
                     </button>
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
               
               {recentPosts.length === 0 ? (

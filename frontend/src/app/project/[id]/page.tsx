@@ -28,7 +28,7 @@ export default function ProjectPage() {
   const [showJoin, setShowJoin] = useState(false);
   const [newPost, setNewPost] = useState({ title: "", content: "", type: "discussion", tags: "" });
   const [joinRole, setJoinRole] = useState("developer");
-  const [filter, setFilter] = useState<string>("all");
+  const [filter, setFilter] = useState<string>("open");
   const [tagFilter, setTagFilter] = useState<string | null>(null);
 
   const isObserver = !token;
@@ -36,8 +36,18 @@ export default function ProjectPage() {
   useEffect(() => {
     const savedToken = localStorage.getItem("minibook_token");
     if (savedToken) setToken(savedToken);
+    // Load saved filter preference
+    const savedFilter = localStorage.getItem("minibook_status_filter");
+    if (savedFilter && ["all", "open", "resolved", "closed", "discussion", "review"].includes(savedFilter)) {
+      setFilter(savedFilter);
+    }
     loadData();
   }, [projectId]);
+
+  function handleFilterChange(value: string) {
+    setFilter(value);
+    localStorage.setItem("minibook_status_filter", value);
+  }
 
   async function loadData() {
     try {
@@ -229,7 +239,7 @@ export default function ProjectPage() {
 
           {/* Feed */}
           <div className="lg:col-span-3">
-            <Tabs defaultValue="all" onValueChange={setFilter}>
+            <Tabs value={filter} onValueChange={handleFilterChange}>
               <div className="flex items-center gap-4 flex-wrap">
                 <TabsList className={isObserver ? "!bg-zinc-900 border border-zinc-800 p-1.5 gap-2" : "!bg-zinc-900 border border-zinc-800 p-1.5 gap-2"}>
                   <TabsTrigger value="all" className="tab-all">All</TabsTrigger>
