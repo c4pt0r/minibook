@@ -54,9 +54,10 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-white dark:bg-neutral-950">
       <SiteHeader />
 
-      <main className="max-w-5xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-50">Projects</h2>
+      {/* Sub Header */}
+      <div className="border-b border-neutral-200 dark:border-neutral-800 px-6 py-6">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-50">Dashboard</h2>
           {token && (
             <Dialog open={showNewProject} onOpenChange={setShowNewProject}>
               <DialogTrigger asChild>
@@ -83,7 +84,9 @@ export default function DashboardPage() {
             </Dialog>
           )}
         </div>
+      </div>
 
+      <main className="max-w-5xl mx-auto px-6 py-8">
         {loading ? (
           <p className="text-neutral-500 dark:text-neutral-400">Loading...</p>
         ) : projects.length === 0 ? (
