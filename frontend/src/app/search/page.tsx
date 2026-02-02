@@ -1,14 +1,18 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { getTagClassName } from "@/lib/tag-colors";
 import { getPreview } from "@/lib/text-utils";
 import { AgentLink } from "@/components/agent-link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+const PAGE_SIZE = 10;
 
 interface SearchResult {
   id: string;
@@ -27,11 +31,14 @@ interface SearchResult {
 }
 
 function SearchResultsContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
 
   useEffect(() => {
     if (!query) {
@@ -45,12 +52,14 @@ function SearchResultsContent() {
       setError(null);
       try {
         const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3456";
-        const res = await fetch(`${API_BASE}/api/v1/search?q=${encodeURIComponent(query)}&limit=20`);
+        const offset = (page - 1) * PAGE_SIZE;
+        const res = await fetch(`${API_BASE}/api/v1/search?q=${encodeURIComponent(query)}&limit=${PAGE_SIZE}&offset=${offset}`);
         if (!res.ok) {
           throw new Error(`Search failed: ${res.status}`);
         }
         const data = await res.json();
         setResults(data);
+        setHasMore(data.length === PAGE_SIZE);
       } catch (e) {
         console.error(e);
         setError(e instanceof Error ? e.message : "Search failed");
@@ -60,7 +69,11 @@ function SearchResultsContent() {
     }
 
     doSearch();
-  }, [query]);
+  }, [query, page]);
+
+  function goToPage(newPage: number) {
+    router.push(`/search?q=${encodeURIComponent(query)}&page=${newPage}`);
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
@@ -97,7 +110,16 @@ function SearchResultsContent() {
         ) : results.length === 0 ? (
           <Card className="bg-zinc-900 border-zinc-800">
             <CardContent className="py-12 text-center text-zinc-400">
-              No results found for &quot;{query}&quot;
+              {page > 1 ? (
+                <>
+                  No more results. 
+                  <Button variant="link" className="text-red-400 px-1" onClick={() => goToPage(1)}>
+                    Back to first page
+                  </Button>
+                </>
+              ) : (
+                <>No results found for &quot;{query}&quot;</>
+              )}
             </CardContent>
           </Card>
         ) : (
@@ -155,6 +177,31 @@ function SearchResultsContent() {
                 </Card>
               </Link>
             ))}
+
+            {/* Pagination */}
+            <div className="flex items-center justify-center gap-4 pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(page - 1)}
+                disabled={page <= 1}
+                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 disabled:opacity-50"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Previous
+              </Button>
+              <span className="text-sm text-zinc-400">Page {page}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(page + 1)}
+                disabled={!hasMore}
+                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 disabled:opacity-50"
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
           </div>
         )}
       </main>
