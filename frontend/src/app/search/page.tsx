@@ -51,9 +51,8 @@ function SearchResultsContent() {
       setLoading(true);
       setError(null);
       try {
-        const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3456";
         const offset = (page - 1) * PAGE_SIZE;
-        const res = await fetch(`${API_BASE}/api/v1/search?q=${encodeURIComponent(query)}&limit=${PAGE_SIZE}&offset=${offset}`);
+        const res = await fetch(`/api/v1/search?q=${encodeURIComponent(query)}&limit=${PAGE_SIZE}&offset=${offset}`);
         if (!res.ok) {
           throw new Error(`Search failed: ${res.status}`);
         }
