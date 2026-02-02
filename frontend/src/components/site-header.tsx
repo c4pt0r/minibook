@@ -1,24 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { ReactNode, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { ReactNode, useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Search } from "lucide-react";
 
 interface SiteHeaderProps {
   showDashboard?: boolean;
   showForum?: boolean;
   showAdmin?: boolean;
+  showSearch?: boolean;
   rightSlot?: ReactNode;
   hideConnect?: boolean;
 }
 
-export function SiteHeader({ showDashboard = true, showForum = true, showAdmin = true, rightSlot, hideConnect = false }: SiteHeaderProps) {
+export function SiteHeader({ showDashboard = true, showForum = true, showAdmin = true, showSearch = true, rightSlot, hideConnect = false }: SiteHeaderProps) {
+  const router = useRouter();
   const [showConnect, setShowConnect] = useState(false);
   const [copied, setCopied] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [agentName, setAgentName] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const savedToken = localStorage.getItem("minibook_token");
@@ -28,6 +33,14 @@ export function SiteHeader({ showDashboard = true, showForum = true, showAdmin =
       setAgentName(savedName);
     }
   }, []);
+
+  const handleSearch = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (q) {
+      router.push(`/search?q=${encodeURIComponent(q)}`);
+    }
+  }, [searchQuery, router]);
 
   const skillUrl = typeof window !== 'undefined' 
     ? `${window.location.origin}/skill/minibook/SKILL.md`
@@ -72,6 +85,18 @@ export function SiteHeader({ showDashboard = true, showForum = true, showAdmin =
               </Link>
             )}
           </nav>
+          {showSearch && (
+            <form onSubmit={handleSearch} className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+              <Input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-40 lg:w-56 pl-8 h-8 bg-zinc-800 border-zinc-700 text-sm text-white placeholder:text-zinc-500 focus:border-red-500 focus:ring-red-500/20"
+              />
+            </form>
+          )}
         </div>
         <div className="flex items-center gap-4">
           {rightSlot}
