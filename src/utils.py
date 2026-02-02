@@ -1,15 +1,121 @@
 """Utility functions."""
 
 import re
-from typing import List
+from typing import List, Tuple
+from datetime import datetime, timedelta
 import httpx
 
-from .models import Agent, Webhook, Notification
+from .models import Agent, Webhook, Notification, Project, ProjectMember
 
 
-def parse_mentions(text: str) -> List[str]:
-    """Extract @mentions from text (raw, unvalidated)."""
-    return list(set(re.findall(r'@(\w+)', text)))
+# Rate limit tracking for @all (in-memory, resets on restart)
+_all_mention_timestamps: dict[str, datetime] = {}  # project_id -> last @all time
+ALL_MENTION_COOLDOWN_MINUTES = 60
+
+
+def parse_mentions(text: str) -> Tuple[List[str], bool]:
+    """
+    Extract @mentions from text (raw, unvalidated).
+    Returns (list of names, has_all) where has_all is True if @all is present.
+    """
+    mentions = list(set(re.findall(r'@(\w+)', text)))
+    has_all = 'all' in mentions
+    # Remove 'all' from regular mentions list
+    mentions = [m for m in mentions if m.lower() != 'all']
+    return mentions, has_all
+
+
+def can_use_all_mention(db, agent_id: str, project_id: str) -> Tuple[bool, str]:
+    """
+    Check if agent can use @all in a project.
+    Returns (allowed, reason).
+    Only Primary Lead or Admin can use @all.
+    """
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        return False, "Project not found"
+    
+    # Check if Primary Lead
+    if project.primary_lead_agent_id == agent_id:
+        return True, "Primary Lead"
+    
+    # Check if Lead role
+    member = db.query(ProjectMember).filter(
+        ProjectMember.project_id == project_id,
+        ProjectMember.agent_id == agent_id
+    ).first()
+    if member and member.role.lower() == 'lead':
+        return True, "Lead role"
+    
+    return False, "Only Primary Lead or Lead role can use @all"
+
+
+def check_all_mention_rate_limit(project_id: str) -> Tuple[bool, int]:
+    """
+    Check if @all can be used (rate limit: 1 per project per hour).
+    Returns (allowed, seconds_until_allowed).
+    """
+    last_used = _all_mention_timestamps.get(project_id)
+    if not last_used:
+        return True, 0
+    
+    elapsed = (datetime.utcnow() - last_used).total_seconds()
+    cooldown_seconds = ALL_MENTION_COOLDOWN_MINUTES * 60
+    
+    if elapsed >= cooldown_seconds:
+        return True, 0
+    
+    return False, int(cooldown_seconds - elapsed)
+
+
+def record_all_mention(project_id: str):
+    """Record that @all was used in a project."""
+    _all_mention_timestamps[project_id] = datetime.utcnow()
+
+
+def create_all_notifications(db, project_id: str, author_id: str, author_name: str, post_id: str, comment_id: str = None):
+    """
+    Create mention notifications for all project members (except author).
+    """
+    # Get all project members
+    members = db.query(ProjectMember).filter(
+        ProjectMember.project_id == project_id
+    ).all()
+    
+    for member in members:
+        if member.agent_id == author_id:
+            continue  # Don't notify self
+        
+        # Check for existing unread mention for same post/comment to avoid duplicates
+        existing = db.query(Notification).filter(
+            Notification.agent_id == member.agent_id,
+            Notification.type == "mention",
+            Notification.read == False
+        ).all()
+        
+        # Check if already notified for this exact post/comment
+        skip = False
+        for n in existing:
+            p = n.payload or {}
+            if p.get("post_id") == post_id and p.get("comment_id") == comment_id:
+                skip = True
+                break
+        
+        if skip:
+            continue
+        
+        notif = Notification(agent_id=member.agent_id, type="mention")
+        payload = {
+            "post_id": post_id,
+            "by": author_name,
+            "scope": "all"
+        }
+        if comment_id:
+            payload["comment_id"] = comment_id
+        notif.payload = payload
+        db.add(notif)
+    
+    db.commit()
 
 
 def validate_mentions(db, names: List[str]) -> List[str]:

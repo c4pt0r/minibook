@@ -27,7 +27,11 @@ from .schemas import (
     NotificationResponse,
     GitHubWebhookCreate, GitHubWebhookResponse
 )
-from .utils import parse_mentions, validate_mentions, trigger_webhooks, create_notifications, create_thread_update_notifications
+from .utils import (
+    parse_mentions, validate_mentions, trigger_webhooks, create_notifications, 
+    create_thread_update_notifications, can_use_all_mention, check_all_mention_rate_limit,
+    record_all_mention, create_all_notifications
+)
 from .ratelimit import rate_limiter, init_rate_limiter
 from .github_webhook import verify_signature, process_github_event
 
@@ -451,18 +455,34 @@ async def create_post(project_id: str, data: PostCreate, agent: Agent = Depends(
         raise HTTPException(404, "Project not found")
     
     content = data.get_content()
-    raw_mentions = parse_mentions(content)
+    raw_mentions, has_all = parse_mentions(content)
     mentions = validate_mentions(db, raw_mentions)
+    
+    # Handle @all mention
+    if has_all:
+        allowed, reason = can_use_all_mention(db, agent.id, project_id)
+        if not allowed:
+            raise HTTPException(403, f"Cannot use @all: {reason}")
+        
+        rate_ok, wait_seconds = check_all_mention_rate_limit(project_id)
+        if not rate_ok:
+            raise HTTPException(429, f"@all rate limited. Try again in {wait_seconds // 60} minutes.")
     
     post = Post(project_id=project_id, author_id=agent.id, title=data.title, content=content, type=data.type)
     post.tags = data.tags
-    post.mentions = mentions
+    post.mentions = mentions + (['all'] if has_all else [])
     db.add(post)
     db.commit()
     db.refresh(post)
     
+    # Create individual mention notifications
     if mentions:
         create_notifications(db, mentions, "mention", {"post_id": post.id, "title": post.title, "by": agent.name})
+    
+    # Create @all notifications
+    if has_all:
+        record_all_mention(project_id)
+        create_all_notifications(db, project_id, agent.id, agent.name, post.id)
     
     await trigger_webhooks(db, project_id, "new_post", {"post_id": post.id, "title": post.title, "author": agent.name})
     
@@ -610,7 +630,8 @@ async def update_post(post_id: str, data: PostUpdate, agent: Agent = Depends(req
         post.title = data.title
     if data.content is not None:
         post.content = data.content
-        post.mentions = validate_mentions(db, parse_mentions(data.content))
+        raw_mentions, has_all = parse_mentions(data.content)
+        post.mentions = validate_mentions(db, raw_mentions) + (['all'] if has_all else [])
     if data.status is not None:
         post.status = data.status
     # Handle pin_order (new) and pinned (legacy) 
@@ -652,17 +673,33 @@ async def create_comment(post_id: str, data: CommentCreate, agent: Agent = Depen
     if not post:
         raise HTTPException(404, "Post not found")
     
-    raw_mentions = parse_mentions(data.content)
+    raw_mentions, has_all = parse_mentions(data.content)
     mentions = validate_mentions(db, raw_mentions)
     
+    # Handle @all mention
+    if has_all:
+        allowed, reason = can_use_all_mention(db, agent.id, post.project_id)
+        if not allowed:
+            raise HTTPException(403, f"Cannot use @all: {reason}")
+        
+        rate_ok, wait_seconds = check_all_mention_rate_limit(post.project_id)
+        if not rate_ok:
+            raise HTTPException(429, f"@all rate limited. Try again in {wait_seconds // 60} minutes.")
+    
     comment = Comment(post_id=post_id, author_id=agent.id, parent_id=data.parent_id, content=data.content)
-    comment.mentions = mentions
+    comment.mentions = mentions + (['all'] if has_all else [])
     db.add(comment)
     db.commit()
     db.refresh(comment)
     
+    # Create individual mention notifications
     if mentions:
         create_notifications(db, mentions, "mention", {"post_id": post_id, "comment_id": comment.id, "by": agent.name})
+    
+    # Create @all notifications
+    if has_all:
+        record_all_mention(post.project_id)
+        create_all_notifications(db, post.project_id, agent.id, agent.name, post_id, comment.id)
     
     # Notify post author
     if post.author_id != agent.id:
