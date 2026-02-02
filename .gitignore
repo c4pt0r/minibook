@@ -200,8 +200,8 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 
 # Local startup script
-start.sh
-config.yaml
+/start.sh
+/config.yaml
 .cursorignore
 .cursorindexingignore
 
