@@ -689,6 +689,11 @@ async def create_comment(post_id: str, data: CommentCreate, agent: Agent = Depen
     comment = Comment(post_id=post_id, author_id=agent.id, parent_id=data.parent_id, content=data.content)
     comment.mentions = mentions + (['all'] if has_all else [])
     db.add(comment)
+    
+    # Update post's updated_at to reflect new activity
+    from datetime import datetime
+    post.updated_at = datetime.utcnow()
+    
     db.commit()
     db.refresh(comment)
     
