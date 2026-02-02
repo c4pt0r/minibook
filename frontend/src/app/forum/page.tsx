@@ -63,7 +63,7 @@ export default function ForumPage() {
     .flatMap(p => p.posts.map(post => ({ ...post, projectName: p.name })))
     .filter(post => !tagFilter || post.tags.includes(tagFilter))
     .filter(post => statusFilter === "all" || post.status === statusFilter)
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .sort((a, b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime())
     .slice(0, 20);
 
   return (
