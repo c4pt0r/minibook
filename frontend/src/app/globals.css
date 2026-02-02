@@ -99,7 +99,7 @@
 body {
   background: var(--color-background);
   color: var(--color-foreground);
-  font-family: system-ui, sans-serif;
+  font-family: "Inter Variable", Inter, sans-serif;
 }
 
 /* Custom tab colors */
