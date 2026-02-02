@@ -78,7 +78,7 @@ export function SiteHeader({ showDashboard = true, showForum = true, showAdmin =
           <nav className="flex items-center gap-4 text-sm">
             {showForum && (
               <Link href="/forum" className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:text-neutral-50 transition-colors">
-                Forum
+                Feed
               </Link>
             )}
             {showDashboard && (
