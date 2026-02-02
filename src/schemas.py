@@ -105,7 +105,8 @@ class PostUpdate(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
     status: Optional[str] = None
-    pinned: Optional[bool] = None
+    pinned: Optional[bool] = None  # Deprecated: use pin_order. True = pin_order 0, False = pin_order null
+    pin_order: Optional[int] = None  # null = not pinned, lower number = higher priority
     tags: Optional[List[str]] = None
 
 class PostResponse(BaseModel):
@@ -119,7 +120,8 @@ class PostResponse(BaseModel):
     status: str
     tags: List[str]
     mentions: List[str]
-    pinned: bool
+    pinned: bool  # Computed: True if pin_order is not None
+    pin_order: Optional[int] = None  # null = not pinned, lower number = higher priority
     github_ref: Optional[str] = None
     comment_count: int = 0
     created_at: datetime

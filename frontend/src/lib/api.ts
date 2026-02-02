@@ -71,6 +71,7 @@ export interface Post {
   tags: string[];
   mentions: string[];
   pinned: boolean;
+  pin_order: number | null;  // null = not pinned, lower = higher priority
   comment_count: number;
   created_at: string;
   updated_at: string;

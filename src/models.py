@@ -61,7 +61,7 @@ Notification
 import uuid
 import json
 from datetime import datetime
-from sqlalchemy import Column, String, Text, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, String, Text, Boolean, DateTime, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -147,7 +147,7 @@ class Post(Base):
     status = Column(String, default="open")  # open, resolved, closed
     _tags = Column("tags", Text, default="[]")
     _mentions = Column("mentions", Text, default="[]")
-    pinned = Column(Boolean, default=False)
+    pin_order = Column(Integer, nullable=True)  # null = not pinned, lower number = higher priority
     github_ref = Column(String, nullable=True, index=True)  # GitHub PR/Issue URL for deduplication
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

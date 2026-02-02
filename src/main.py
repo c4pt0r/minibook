@@ -469,7 +469,7 @@ async def create_post(project_id: str, data: PostCreate, agent: Agent = Depends(
     return PostResponse(
         id=post.id, project_id=post.project_id, author_id=post.author_id, author_name=agent.name,
         title=post.title, content=post.content, type=post.type, status=post.status,
-        tags=post.tags, mentions=post.mentions, pinned=post.pinned, github_ref=post.github_ref,
+        tags=post.tags, mentions=post.mentions, pinned=(post.pin_order is not None), pin_order=post.pin_order, github_ref=post.github_ref,
         comment_count=0,
         created_at=post.created_at, updated_at=post.updated_at
     )
@@ -483,7 +483,9 @@ async def list_posts(project_id: str, status: Optional[str] = None, type: Option
         query = query.filter(Post.status == status)
     if type:
         query = query.filter(Post.type == type)
-    posts = query.order_by(Post.pinned.desc(), Post.created_at.desc()).all()
+    # Order: pinned posts first (by pin_order asc, nulls last), then by created_at desc
+    from sqlalchemy import nullslast
+    posts = query.order_by(nullslast(Post.pin_order.asc()), Post.created_at.desc()).all()
     
     # Get comment counts for all posts in one query
     post_ids = [p.id for p in posts]
@@ -498,7 +500,7 @@ async def list_posts(project_id: str, status: Optional[str] = None, type: Option
     return [PostResponse(
         id=p.id, project_id=p.project_id, author_id=p.author_id, author_name=p.author.name,
         title=p.title, content=p.content, type=p.type, status=p.status,
-        tags=p.tags, mentions=p.mentions, pinned=p.pinned, github_ref=p.github_ref,
+        tags=p.tags, mentions=p.mentions, pinned=(p.pin_order is not None), pin_order=p.pin_order, github_ref=p.github_ref,
         comment_count=comment_counts.get(p.id, 0),
         created_at=p.created_at, updated_at=p.updated_at
     ) for p in posts]
@@ -558,7 +560,7 @@ async def search_posts(
     return [PostResponse(
         id=p.id, project_id=p.project_id, author_id=p.author_id, author_name=p.author.name,
         title=p.title, content=p.content, type=p.type, status=p.status,
-        tags=p.tags, mentions=p.mentions, pinned=p.pinned, github_ref=p.github_ref,
+        tags=p.tags, mentions=p.mentions, pinned=(p.pin_order is not None), pin_order=p.pin_order, github_ref=p.github_ref,
         comment_count=comment_counts.get(p.id, 0),
         created_at=p.created_at, updated_at=p.updated_at
     ) for p in posts]
@@ -589,7 +591,7 @@ async def get_post(post_id: str, db=Depends(get_db)):
     return PostResponse(
         id=post.id, project_id=post.project_id, author_id=post.author_id, author_name=post.author.name,
         title=post.title, content=post.content, type=post.type, status=post.status,
-        tags=post.tags, mentions=post.mentions, pinned=post.pinned, github_ref=post.github_ref,
+        tags=post.tags, mentions=post.mentions, pinned=(post.pin_order is not None), pin_order=post.pin_order, github_ref=post.github_ref,
         comment_count=comment_count,
         created_at=post.created_at, updated_at=post.updated_at
     )
@@ -611,8 +613,12 @@ async def update_post(post_id: str, data: PostUpdate, agent: Agent = Depends(req
         post.mentions = validate_mentions(db, parse_mentions(data.content))
     if data.status is not None:
         post.status = data.status
-    if data.pinned is not None:
-        post.pinned = data.pinned
+    # Handle pin_order (new) and pinned (legacy) 
+    if data.pin_order is not None:
+        post.pin_order = data.pin_order if data.pin_order >= 0 else None
+    elif data.pinned is not None:
+        # Legacy: pinned=True → pin_order=0, pinned=False → pin_order=None
+        post.pin_order = 0 if data.pinned else None
     if data.tags is not None:
         post.tags = data.tags
     
@@ -628,7 +634,7 @@ async def update_post(post_id: str, data: PostUpdate, agent: Agent = Depends(req
     return PostResponse(
         id=post.id, project_id=post.project_id, author_id=post.author_id, author_name=post.author.name,
         title=post.title, content=post.content, type=post.type, status=post.status,
-        tags=post.tags, mentions=post.mentions, pinned=post.pinned, github_ref=post.github_ref,
+        tags=post.tags, mentions=post.mentions, pinned=(post.pin_order is not None), pin_order=post.pin_order, github_ref=post.github_ref,
         comment_count=comment_count,
         created_at=post.created_at, updated_at=post.updated_at
     )
@@ -932,7 +938,7 @@ async def get_plan(project_id: str, db=Depends(get_db)):
         id=plan.id, project_id=plan.project_id, author_id=plan.author_id,
         author_name=plan.author.name, title=plan.title, content=plan.content,
         type=plan.type, status=plan.status, tags=plan.tags, mentions=plan.mentions,
-        pinned=plan.pinned, github_ref=plan.github_ref, comment_count=comment_count,
+        pinned=(plan.pin_order is not None), pin_order=plan.pin_order, github_ref=plan.github_ref, comment_count=comment_count,
         created_at=plan.created_at, updated_at=plan.updated_at
     )
 
@@ -964,7 +970,7 @@ async def set_plan(
         # Update existing
         plan.title = title
         plan.content = content
-        plan.pinned = True
+        plan.pin_order = 0  # Plans are always pinned at top
         plan.author_id = author.id  # Update author to whoever edited it
     else:
         # Create new
@@ -974,7 +980,7 @@ async def set_plan(
             title=title,
             content=content,
             type="plan",
-            pinned=True
+            pin_order=0  # Plans are always pinned at top
         )
         db.add(plan)
     
@@ -985,7 +991,7 @@ async def set_plan(
         id=plan.id, project_id=plan.project_id, author_id=plan.author_id,
         author_name=plan.author.name, title=plan.title, content=plan.content,
         type=plan.type, status=plan.status, tags=plan.tags, mentions=plan.mentions,
-        pinned=plan.pinned, github_ref=plan.github_ref, comment_count=0,
+        pinned=(plan.pin_order is not None), pin_order=plan.pin_order, github_ref=plan.github_ref, comment_count=0,
         created_at=plan.created_at, updated_at=plan.updated_at
     )
 

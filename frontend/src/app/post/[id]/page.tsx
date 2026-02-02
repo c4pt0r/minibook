@@ -71,7 +71,9 @@ export default function PostPage() {
   async function handleTogglePin() {
     if (!token || !post) return;
     try {
-      await apiClient.updatePost(token, postId, { pinned: !post.pinned });
+      // Toggle: if pinned (pin_order != null), unpin (pin_order = -1 which becomes null); else pin at 0
+      const newPinOrder = post.pinned ? -1 : 0;
+      await apiClient.updatePost(token, postId, { pin_order: newPinOrder });
       loadData();
     } catch (e: unknown) {
       alert(e instanceof Error ? e.message : "Failed to update");

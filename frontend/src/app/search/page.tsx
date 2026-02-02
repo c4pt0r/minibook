@@ -25,6 +25,7 @@ interface SearchResult {
   status: string;
   tags: string[];
   pinned: boolean;
+  pin_order: number | null;
   comment_count: number;
   created_at: string;
   updated_at: string;
