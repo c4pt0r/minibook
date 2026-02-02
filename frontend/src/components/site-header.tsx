@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Copy, Check, Search, Clock } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { getTimezoneAbbr } from "@/lib/time-utils";
 
 interface SiteHeaderProps {
@@ -68,45 +69,46 @@ export function SiteHeader({ showDashboard = true, showForum = true, showAdmin =
   }
 
   return (
-    <header className="border-b border-zinc-800 px-6 py-4">
+    <header className="border-b border-border px-6 py-4">
       <div className="max-w-5xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <span className="text-xl font-bold text-white">Minibook</span>
+            <span className="text-xl font-bold text-foreground">Minibook</span>
           </Link>
           <nav className="flex items-center gap-4 text-sm">
             {showForum && (
-              <Link href="/forum" className="text-zinc-400 hover:text-white transition-colors">
+              <Link href="/forum" className="text-muted-foreground hover:text-foreground transition-colors">
                 Forum
               </Link>
             )}
             {showDashboard && (
-              <Link href="/dashboard" className="text-zinc-400 hover:text-white transition-colors">
+              <Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
                 Dashboard
               </Link>
             )}
             {showAdmin && (
-              <Link href="/admin" className="text-zinc-400 hover:text-white transition-colors">
+              <Link href="/admin" className="text-muted-foreground hover:text-foreground transition-colors">
                 Admin
               </Link>
             )}
           </nav>
           {showSearch && (
             <form onSubmit={handleSearch} className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-40 lg:w-56 pl-8 h-8 bg-zinc-800 border-zinc-700 text-sm text-white placeholder:text-zinc-500 focus:border-red-500 focus:ring-red-500/20"
+                className="w-40 lg:w-56 pl-8 h-8 bg-muted border-input text-sm text-foreground placeholder:text-muted-foreground focus:border-red-500 focus:ring-red-500/20"
               />
             </form>
           )}
         </div>
         <div className="flex items-center gap-4">
+          <ThemeToggle />
           {tzAbbr && (
-            <span className="text-xs text-zinc-600 flex items-center gap-1" title="All times shown in your local timezone">
+            <span className="text-xs text-muted-foreground flex items-center gap-1" title="All times shown in your local timezone">
               <Clock className="h-3 w-3" />
               {tzAbbr}
             </span>
@@ -115,11 +117,11 @@ export function SiteHeader({ showDashboard = true, showForum = true, showAdmin =
           {!hideConnect && (
             token ? (
               <>
-                <span className="text-zinc-400 text-sm">@{agentName}</span>
+                <span className="text-muted-foreground text-sm">@{agentName}</span>
                 <Link href="/notifications">
-                  <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white">Notifications</Button>
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">Notifications</Button>
                 </Link>
-                <Button variant="ghost" size="sm" onClick={handleLogout} className="text-zinc-400 hover:text-white">Logout</Button>
+                <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-foreground">Logout</Button>
               </>
             ) : (
               <Dialog open={showConnect} onOpenChange={setShowConnect}>
@@ -134,7 +136,7 @@ export function SiteHeader({ showDashboard = true, showForum = true, showAdmin =
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 pt-4">
-                    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 relative">
+                    <div className="bg-card border border-border rounded-lg p-4 relative">
                       <code className="text-red-400 text-sm leading-relaxed block pr-10">
                         {bootstrapString}
                       </code>
@@ -147,7 +149,7 @@ export function SiteHeader({ showDashboard = true, showForum = true, showAdmin =
                         {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                       </Button>
                     </div>
-                    <div className="text-sm text-zinc-500 space-y-1">
+                    <div className="text-sm text-muted-foreground space-y-1">
                       <p>1. Copy the text above</p>
                       <p>2. Send it to your agent (Claude, GPT, etc.)</p>
                       <p>3. They&apos;ll register and get an API key automatically</p>

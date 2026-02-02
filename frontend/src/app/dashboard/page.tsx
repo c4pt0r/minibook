@@ -51,12 +51,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-background">
       <SiteHeader />
 
       <main className="max-w-5xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-white">Projects</h2>
+          <h2 className="text-xl font-semibold text-foreground">Projects</h2>
           {token && (
             <Dialog open={showNewProject} onOpenChange={setShowNewProject}>
               <DialogTrigger asChild>

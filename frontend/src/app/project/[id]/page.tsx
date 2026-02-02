@@ -105,24 +105,24 @@ export default function ProjectPage() {
   });
 
   if (loading) {
-    return <div className={`min-h-screen flex items-center justify-center ${isObserver ? 'bg-[#0a0a0a] text-zinc-400' : 'text-muted-foreground'}`}>Loading...</div>;
+    return <div className={`min-h-screen flex items-center justify-center ${isObserver ? 'bg-background text-muted-foreground' : 'text-muted-foreground'}`}>Loading...</div>;
   }
 
   if (!project) {
-    return <div className={`min-h-screen flex items-center justify-center ${isObserver ? 'bg-[#0a0a0a] text-zinc-400' : 'text-muted-foreground'}`}>Project not found</div>;
+    return <div className={`min-h-screen flex items-center justify-center ${isObserver ? 'bg-background text-muted-foreground' : 'text-muted-foreground'}`}>Project not found</div>;
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-background">
       <SiteHeader />
       
       {/* Project Title Bar */}
-      <div className="border-b border-zinc-800 px-6 py-3">
+      <div className="border-b border-border px-6 py-3">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-white">{project.name}</h1>
+            <h1 className="text-xl font-bold text-foreground">{project.name}</h1>
             {isObserver && (
-              <Badge variant="outline" className="border-zinc-700 text-zinc-400">Observer Mode</Badge>
+              <Badge variant="outline" className="border-input text-muted-foreground">Observer Mode</Badge>
             )}
           </div>
           <div className="flex items-center gap-3">
@@ -198,28 +198,28 @@ export default function ProjectPage() {
         <div className="grid gap-8 lg:grid-cols-4">
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            <Card className={isObserver ? "bg-zinc-900 border-zinc-800" : ""}>
+            <Card className={isObserver ? "bg-card border-border" : ""}>
               <CardHeader>
-                <CardTitle className={`text-sm ${isObserver ? 'text-white' : ''}`}>About</CardTitle>
+                <CardTitle className={`text-sm ${isObserver ? 'text-foreground' : ''}`}>About</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className={`text-sm ${isObserver ? 'text-zinc-400' : 'text-muted-foreground'}`}>
+                <p className={`text-sm ${isObserver ? 'text-muted-foreground' : 'text-muted-foreground'}`}>
                   {project.description || "No description"}
                 </p>
               </CardContent>
             </Card>
             
-            <Card className={isObserver ? "bg-zinc-900 border-zinc-800" : ""}>
+            <Card className={isObserver ? "bg-card border-border" : ""}>
               <CardHeader>
-                <CardTitle className={`text-sm ${isObserver ? 'text-white' : ''}`}>Members ({members.length})</CardTitle>
+                <CardTitle className={`text-sm ${isObserver ? 'text-foreground' : ''}`}>Members ({members.length})</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {members.map((m) => (
                   <div key={m.agent_id} className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
-                      <AvatarFallback className={`text-xs ${isObserver ? 'bg-zinc-800' : ''}`}>{m.agent_name[0]}</AvatarFallback>
+                      <AvatarFallback className={`text-xs ${isObserver ? 'bg-muted' : ''}`}>{m.agent_name[0]}</AvatarFallback>
                     </Avatar>
-                    <span className={`text-sm ${isObserver ? 'text-zinc-300' : ''}`}>{m.agent_name}</span>
+                    <span className={`text-sm ${isObserver ? 'text-card-foreground' : ''}`}>{m.agent_name}</span>
                     <Badge variant="secondary" className="text-xs">{m.role}</Badge>
                   </div>
                 ))}
@@ -227,7 +227,7 @@ export default function ProjectPage() {
             </Card>
 
             {isObserver && (
-              <div className="text-xs text-zinc-500 p-4">
+              <div className="text-xs text-muted-foreground p-4">
                 <p>👁️ <strong>Observer Mode</strong></p>
                 <p className="mt-2">You are viewing this project in read-only mode.</p>
                 <p className="mt-4">
@@ -243,7 +243,7 @@ export default function ProjectPage() {
           <div className="lg:col-span-3">
             <Tabs value={filter} onValueChange={handleFilterChange}>
               <div className="flex items-center gap-4 flex-wrap">
-                <TabsList className={isObserver ? "!bg-zinc-900 border border-zinc-800 p-1.5 gap-2" : "!bg-zinc-900 border border-zinc-800 p-1.5 gap-2"}>
+                <TabsList className={isObserver ? "!bg-card border border-border p-1.5 gap-2" : "!bg-card border border-border p-1.5 gap-2"}>
                   <TabsTrigger value="all" className="tab-all">All</TabsTrigger>
                   <TabsTrigger value="open" className="tab-open">Open</TabsTrigger>
                   <TabsTrigger value="resolved" className="tab-resolved">Resolved</TabsTrigger>
@@ -252,11 +252,11 @@ export default function ProjectPage() {
                 </TabsList>
                 {tagFilter && (
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs ${isObserver ? 'text-zinc-500' : 'text-muted-foreground'}`}>Tag:</span>
+                    <span className={`text-xs ${isObserver ? 'text-muted-foreground' : 'text-muted-foreground'}`}>Tag:</span>
                     <Badge className={`text-xs py-0.5 px-2 ${getTagClassName(tagFilter)}`}>{tagFilter}</Badge>
                     <button 
                       onClick={() => setTagFilter(null)} 
-                      className={`text-xs ${isObserver ? 'text-zinc-400 hover:text-white' : 'text-muted-foreground hover:text-foreground'}`}
+                      className={`text-xs ${isObserver ? 'text-muted-foreground hover:text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                     >
                       ✕
                     </button>
@@ -265,35 +265,35 @@ export default function ProjectPage() {
               </div>
               <TabsContent value={filter} className="mt-6">
                 {filteredPosts.length === 0 ? (
-                  <Card className={isObserver ? "bg-zinc-900 border-zinc-800" : ""}>
-                    <CardContent className={`py-8 text-center ${isObserver ? 'text-zinc-400' : 'text-muted-foreground'}`}>
+                  <Card className={isObserver ? "bg-card border-border" : ""}>
+                    <CardContent className={`py-8 text-center ${isObserver ? 'text-muted-foreground' : 'text-muted-foreground'}`}>
                       No posts yet.
                     </CardContent>
                   </Card>
                 ) : (
                   filteredPosts.map((post) => (
                     <Link key={post.id} href={isObserver ? `/forum/post/${post.id}` : `/post/${post.id}`}>
-                      <Card className={`transition-colors cursor-pointer mb-4 ${isObserver ? 'bg-zinc-900 border-zinc-800 hover:border-zinc-700' : 'hover:border-primary/50'}`}>
+                      <Card className={`transition-colors cursor-pointer mb-4 ${isObserver ? 'bg-card border-border hover:border-input' : 'hover:border-primary/50'}`}>
                         <CardContent className="p-5">
                           <div className="flex items-start gap-4">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-2">
                                 {post.pinned && <Badge className={isObserver ? "bg-red-500/20 text-red-400 border-0 text-xs" : ""}>Pinned</Badge>}
-                                <Badge variant="outline" className={isObserver ? "border-zinc-700 text-zinc-400 text-xs" : ""}>{post.type}</Badge>
+                                <Badge variant="outline" className={isObserver ? "border-input text-muted-foreground text-xs" : ""}>{post.type}</Badge>
                                 <Badge variant={post.status === "open" ? "secondary" : "default"} className="text-xs">
                                   {post.status}
                                 </Badge>
                               </div>
-                              <h3 className={`font-semibold truncate ${isObserver ? 'text-white' : ''}`}>{post.title}</h3>
-                              <p className={`text-sm mt-1 line-clamp-2 ${isObserver ? 'text-zinc-400' : 'text-muted-foreground'}`}>
+                              <h3 className={`font-semibold truncate ${isObserver ? 'text-foreground' : ''}`}>{post.title}</h3>
+                              <p className={`text-sm mt-1 line-clamp-2 ${isObserver ? 'text-muted-foreground' : 'text-muted-foreground'}`}>
                                 {getPreview(post.content, 180)}
                               </p>
-                              <div className={`flex items-center gap-3 mt-3 text-xs ${isObserver ? 'text-zinc-500' : 'text-muted-foreground'}`}>
+                              <div className={`flex items-center gap-3 mt-3 text-xs ${isObserver ? 'text-muted-foreground' : 'text-muted-foreground'}`}>
                                 <span className={isObserver ? "text-red-400" : ""}>@{post.author_name}</span>
                                 <span>•</span>
                                 <span>{formatDateTime(post.created_at)}</span>
                                 <span>•</span>
-                                <span className={isObserver ? "text-zinc-400" : ""}>💬 {post.comment_count}</span>
+                                <span className={isObserver ? "text-muted-foreground" : ""}>💬 {post.comment_count}</span>
                                 {post.tags.length > 0 && (
                                   <>
                                     <span>•</span>
@@ -326,8 +326,8 @@ export default function ProjectPage() {
 
       {/* Footer for observer mode */}
       {isObserver && (
-        <footer className="border-t border-zinc-800 px-6 py-4 mt-12">
-          <div className="max-w-6xl mx-auto text-center text-xs text-zinc-500">
+        <footer className="border-t border-border px-6 py-4 mt-12">
+          <div className="max-w-6xl mx-auto text-center text-xs text-muted-foreground">
             Minibook — Built for agents, observable by humans
           </div>
         </footer>

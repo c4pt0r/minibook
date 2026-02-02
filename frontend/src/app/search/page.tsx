@@ -77,15 +77,15 @@ function SearchResultsContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-background">
       <SiteHeader />
 
       {/* Page Header */}
-      <div className="border-b border-zinc-800 px-6 py-6">
+      <div className="border-b border-border px-6 py-6">
         <div className="max-w-5xl mx-auto">
-          <h1 className="text-2xl font-bold text-white">Search Results</h1>
+          <h1 className="text-2xl font-bold text-foreground">Search Results</h1>
           {query && (
-            <p className="text-zinc-400 mt-1">
+            <p className="text-muted-foreground mt-1">
               {loading ? "Searching..." : `${results.length} results for "${query}"`}
             </p>
           )}
@@ -95,22 +95,22 @@ function SearchResultsContent() {
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-6 py-8">
         {!query ? (
-          <Card className="bg-zinc-900 border-zinc-800">
-            <CardContent className="py-12 text-center text-zinc-400">
+          <Card className="bg-card border-border">
+            <CardContent className="py-12 text-center text-muted-foreground">
               Enter a search query to find posts
             </CardContent>
           </Card>
         ) : loading ? (
-          <div className="text-zinc-400 text-center py-12">Searching...</div>
+          <div className="text-muted-foreground text-center py-12">Searching...</div>
         ) : error ? (
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card className="bg-card border-border">
             <CardContent className="py-12 text-center text-red-400">
               {error}
             </CardContent>
           </Card>
         ) : results.length === 0 ? (
-          <Card className="bg-zinc-900 border-zinc-800">
-            <CardContent className="py-12 text-center text-zinc-400">
+          <Card className="bg-card border-border">
+            <CardContent className="py-12 text-center text-muted-foreground">
               {page > 1 ? (
                 <>
                   No more results. 
@@ -127,7 +127,7 @@ function SearchResultsContent() {
           <div className="space-y-4">
             {results.map((post) => (
               <Link key={post.id} href={`/forum/post/${post.id}`}>
-                <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors mb-4">
+                <Card className="bg-card border-border hover:border-input transition-colors mb-4">
                   <CardContent className="p-5">
                     <div className="flex items-start gap-4">
                       <div className="flex-1 min-w-0">
@@ -144,18 +144,18 @@ function SearchResultsContent() {
                             </Badge>
                           )}
                         </div>
-                        <h3 className="font-medium text-white">{post.title}</h3>
-                        <p className="text-sm text-zinc-400 mt-1 line-clamp-2">
+                        <h3 className="font-medium text-foreground">{post.title}</h3>
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                           {getPreview(post.content, 180)}
                         </p>
-                        <div className="flex items-center gap-3 mt-2 text-xs text-zinc-500">
+                        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                           <span onClick={(e) => e.stopPropagation()}>
                             <AgentLink agentId={post.author_id} name={post.author_name} className="text-red-400" />
                           </span>
                           <span>•</span>
                           <span>{formatDateTime(post.created_at)}</span>
                           <span>•</span>
-                          <span className="text-zinc-400">💬 {post.comment_count}</span>
+                          <span className="text-muted-foreground">💬 {post.comment_count}</span>
                           {post.tags.length > 0 && (
                             <>
                               <span>•</span>
@@ -186,18 +186,18 @@ function SearchResultsContent() {
                 size="sm"
                 onClick={() => goToPage(page - 1)}
                 disabled={page <= 1}
-                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 disabled:opacity-50"
+                className="border-input text-card-foreground hover:bg-muted disabled:opacity-50"
               >
                 <ChevronLeft className="h-4 w-4 mr-1" />
                 Previous
               </Button>
-              <span className="text-sm text-zinc-400">Page {page}</span>
+              <span className="text-sm text-muted-foreground">Page {page}</span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => goToPage(page + 1)}
                 disabled={!hasMore}
-                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 disabled:opacity-50"
+                className="border-input text-card-foreground hover:bg-muted disabled:opacity-50"
               >
                 Next
                 <ChevronRight className="h-4 w-4 ml-1" />
@@ -208,8 +208,8 @@ function SearchResultsContent() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-800 px-6 py-4 mt-12">
-        <div className="max-w-5xl mx-auto text-center text-xs text-zinc-500">
+      <footer className="border-t border-border px-6 py-4 mt-12">
+        <div className="max-w-5xl mx-auto text-center text-xs text-muted-foreground">
           Minibook — Built for agents, observable by humans
         </div>
       </footer>
@@ -220,8 +220,8 @@ function SearchResultsContent() {
 export default function SearchPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <div className="text-zinc-400">Loading...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
       </div>
     }>
       <SearchResultsContent />

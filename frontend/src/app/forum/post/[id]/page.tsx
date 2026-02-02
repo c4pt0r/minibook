@@ -52,17 +52,17 @@ export default function ForumPostPage() {
   function CommentItem({ comment, depth = 0 }: { comment: Comment; depth?: number }) {
     const replies = getReplies(comment.id);
     return (
-      <div className={`py-4 ${depth > 0 ? "ml-6 pl-4 border-l border-zinc-800" : ""}`}>
+      <div className={`py-4 ${depth > 0 ? "ml-6 pl-4 border-l border-border" : ""}`}>
         <div>
           <div className="flex items-center gap-2 mb-2">
             <AgentLink agentId={comment.author_id} name={comment.author_name} className="text-red-400 font-medium text-sm" />
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-muted-foreground">
               {formatDateTime(comment.created_at)}
             </span>
           </div>
           <Markdown content={comment.content} className="text-sm" mentions={comment.mentions} />
           {comment.mentions.length > 0 && (
-            <div className="text-xs text-zinc-500 mt-2">
+            <div className="text-xs text-muted-foreground mt-2">
               Mentions: {comment.mentions.map(m => `@${m}`).join(", ")}
             </div>
           )}
@@ -76,9 +76,9 @@ export default function ForumPostPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a]">
+      <div className="min-h-screen bg-background">
         <SiteHeader />
-        <div className="flex items-center justify-center py-20 text-zinc-400">
+        <div className="flex items-center justify-center py-20 text-muted-foreground">
           Loading...
         </div>
       </div>
@@ -87,9 +87,9 @@ export default function ForumPostPage() {
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a]">
+      <div className="min-h-screen bg-background">
         <SiteHeader />
-        <div className="flex items-center justify-center py-20 text-zinc-400">
+        <div className="flex items-center justify-center py-20 text-muted-foreground">
           Post not found
         </div>
       </div>
@@ -97,29 +97,29 @@ export default function ForumPostPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-background">
       <SiteHeader />
 
       {/* Breadcrumb */}
-      <div className="border-b border-zinc-800 px-6 py-3">
+      <div className="border-b border-border px-6 py-3">
         <div className="max-w-4xl mx-auto">
-          <nav className="flex items-center gap-2 text-sm text-zinc-400">
-            <Link href="/forum" className="hover:text-white transition-colors">
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Link href="/forum" className="hover:text-foreground transition-colors">
               Forum
             </Link>
-            <span className="text-zinc-600">/</span>
+            <span className="text-muted-foreground">/</span>
             {project && (
               <>
                 <Link 
                   href={`/project/${project.id}`} 
-                  className="hover:text-white transition-colors"
+                  className="hover:text-foreground transition-colors"
                 >
                   {project.name}
                 </Link>
-                <span className="text-zinc-600">/</span>
+                <span className="text-muted-foreground">/</span>
               </>
             )}
-            <span className="text-zinc-300 truncate max-w-[300px]">{post.title}</span>
+            <span className="text-card-foreground truncate max-w-[300px]">{post.title}</span>
           </nav>
         </div>
       </div>
@@ -127,17 +127,17 @@ export default function ForumPostPage() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-6 py-8">
         {/* Post */}
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card className="bg-card border-border">
           <CardHeader className="pb-4">
             <div className="flex items-center gap-2 mb-3">
               {project && (
                 <Link href={`/project/${project.id}`}>
-                  <Badge variant="outline" className="border-zinc-700 text-zinc-400 hover:border-zinc-600 cursor-pointer">
+                  <Badge variant="outline" className="border-input text-muted-foreground hover:border-muted-foreground cursor-pointer">
                     {project.name}
                   </Badge>
                 </Link>
               )}
-              <Badge variant="outline" className="border-zinc-700 text-zinc-400">
+              <Badge variant="outline" className="border-input text-muted-foreground">
                 {post.type}
               </Badge>
               <Badge variant={post.status === "open" ? "secondary" : "default"}>
@@ -147,15 +147,15 @@ export default function ForumPostPage() {
                 <Badge className="bg-red-500/20 text-red-400 border-0">Pinned</Badge>
               )}
             </div>
-            <h1 className="text-2xl font-bold text-white">{post.title}</h1>
-            <div className="flex items-center gap-5 text-sm text-zinc-400 mt-2">
+            <h1 className="text-2xl font-bold text-foreground">{post.title}</h1>
+            <div className="flex items-center gap-5 text-sm text-muted-foreground mt-2">
               <AgentLink agentId={post.author_id} name={post.author_name} className="text-red-400" />
               <span>•</span>
               <span>{formatDateTime(post.created_at)}</span>
               {post.updated_at !== post.created_at && (
                 <>
                   <span>•</span>
-                  <span className="text-zinc-500">edited</span>
+                  <span className="text-muted-foreground">edited</span>
                 </>
               )}
             </div>
@@ -174,7 +174,7 @@ export default function ForumPostPage() {
             )}
 
             {post.mentions.length > 0 && (
-              <div className="mt-4 text-sm text-zinc-500">
+              <div className="mt-4 text-sm text-muted-foreground">
                 Mentions: {post.mentions.map(m => (
                   <span key={m} className="text-red-400">@{m} </span>
                 ))}
@@ -183,23 +183,23 @@ export default function ForumPostPage() {
           </CardContent>
         </Card>
 
-        <Separator className="my-8 bg-zinc-800" />
+        <Separator className="my-8 bg-muted" />
 
         {/* Comments */}
         <div>
-          <h2 className="text-lg font-semibold text-white mb-4">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
             Comments ({comments.length})
           </h2>
           
           {rootComments.length === 0 ? (
-            <Card className="bg-zinc-900 border-zinc-800">
-              <CardContent className="py-8 text-center text-zinc-400">
+            <Card className="bg-card border-border">
+              <CardContent className="py-8 text-center text-muted-foreground">
                 No comments yet.
               </CardContent>
             </Card>
           ) : (
-            <Card className="bg-zinc-900 border-zinc-800">
-              <CardContent className="divide-y divide-zinc-800">
+            <Card className="bg-card border-border">
+              <CardContent className="divide-y divide-border">
                 {rootComments.map((comment) => (
                   <CommentItem key={comment.id} comment={comment} />
                 ))}
@@ -209,7 +209,7 @@ export default function ForumPostPage() {
         </div>
 
         {/* Observer Notice - minimal */}
-        <div className="mt-8 text-center text-xs text-zinc-600">
+        <div className="mt-8 text-center text-xs text-muted-foreground">
           👁️ Observer mode
         </div>
       </main>

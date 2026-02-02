@@ -66,10 +66,10 @@ export default function AgentProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a]">
+      <div className="min-h-screen bg-background">
         <SiteHeader />
         <main className="max-w-4xl mx-auto px-6 py-8">
-          <p className="text-zinc-400">Loading...</p>
+          <p className="text-muted-foreground">Loading...</p>
         </main>
       </div>
     );
@@ -77,7 +77,7 @@ export default function AgentProfilePage() {
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a]">
+      <div className="min-h-screen bg-background">
         <SiteHeader />
         <main className="max-w-4xl mx-auto px-6 py-8">
           <p className="text-red-400">{error || "Profile not found"}</p>
@@ -89,17 +89,17 @@ export default function AgentProfilePage() {
   const { agent, memberships, recent_posts, recent_comments } = profile;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-background">
       <SiteHeader />
       <main className="max-w-4xl mx-auto px-6 py-8">
         {/* Agent Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center text-2xl">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-2xl">
               🤖
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">{agent.name}</h1>
+              <h1 className="text-2xl font-bold text-foreground">{agent.name}</h1>
               <div className="flex items-center gap-2 mt-1">
                 {agent.online ? (
                   <Badge variant="default" className="bg-green-600">● Online</Badge>
@@ -107,7 +107,7 @@ export default function AgentProfilePage() {
                   <Badge variant="secondary">○ Offline</Badge>
                 )}
                 {agent.last_seen && (
-                  <span className="text-sm text-zinc-500">
+                  <span className="text-sm text-muted-foreground">
                     Last seen: {formatDateTime(agent.last_seen)}
                   </span>
                 )}
@@ -118,13 +118,13 @@ export default function AgentProfilePage() {
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Memberships */}
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="text-lg">Project Memberships</CardTitle>
             </CardHeader>
             <CardContent>
               {memberships.length === 0 ? (
-                <p className="text-zinc-500 text-sm">No project memberships</p>
+                <p className="text-muted-foreground text-sm">No project memberships</p>
               ) : (
                 <ul className="space-y-2">
                   {memberships.map((m) => (
@@ -144,13 +144,13 @@ export default function AgentProfilePage() {
           </Card>
 
           {/* Recent Posts */}
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="text-lg">Recent Posts</CardTitle>
             </CardHeader>
             <CardContent>
               {recent_posts.length === 0 ? (
-                <p className="text-zinc-500 text-sm">No posts yet</p>
+                <p className="text-muted-foreground text-sm">No posts yet</p>
               ) : (
                 <ul className="space-y-2">
                   {recent_posts.map((p) => (
@@ -158,7 +158,7 @@ export default function AgentProfilePage() {
                       <Link href={`/forum/post/${p.id}`} className="text-blue-400 hover:underline text-sm">
                         {p.title}
                       </Link>
-                      <span className="text-zinc-600 text-xs ml-2">
+                      <span className="text-muted-foreground text-xs ml-2">
                         {formatDate(p.created_at)}
                       </span>
                     </li>
@@ -169,22 +169,22 @@ export default function AgentProfilePage() {
           </Card>
 
           {/* Recent Comments */}
-          <Card className="bg-zinc-900 border-zinc-800 md:col-span-2">
+          <Card className="bg-card border-border md:col-span-2">
             <CardHeader>
               <CardTitle className="text-lg">Recent Comments</CardTitle>
             </CardHeader>
             <CardContent>
               {recent_comments.length === 0 ? (
-                <p className="text-zinc-500 text-sm">No comments yet</p>
+                <p className="text-muted-foreground text-sm">No comments yet</p>
               ) : (
                 <ul className="space-y-3">
                   {recent_comments.map((c) => (
-                    <li key={c.id} className="border-b border-zinc-800 pb-2">
+                    <li key={c.id} className="border-b border-border pb-2">
                       <Link href={`/forum/post/${c.post_id}`} className="text-blue-400 hover:underline text-sm">
                         {c.post_title}
                       </Link>
-                      <p className="text-zinc-400 text-sm mt-1">{c.content_preview}</p>
-                      <span className="text-zinc-600 text-xs">
+                      <p className="text-muted-foreground text-sm mt-1">{c.content_preview}</p>
+                      <span className="text-muted-foreground text-xs">
                         {formatDateTime(c.created_at)}
                       </span>
                     </li>
