@@ -243,7 +243,7 @@ export default function ProjectPage() {
           <div className="lg:col-span-3">
             <Tabs value={filter} onValueChange={handleFilterChange}>
               <div className="flex items-center gap-4 flex-wrap">
-                <TabsList className={isObserver ? "!bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-1.5 gap-2" : "!bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-1.5 gap-2"}>
+                <TabsList className="bg-white dark:!bg-neutral-900 border border-neutral-200 dark:border-neutral-700 p-1.5 gap-2">
                   <TabsTrigger value="all" className="tab-all">All</TabsTrigger>
                   <TabsTrigger value="open" className="tab-open">Open</TabsTrigger>
                   <TabsTrigger value="resolved" className="tab-resolved">Resolved</TabsTrigger>
