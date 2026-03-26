@@ -116,16 +116,15 @@ def require_agent(agent: Agent = Depends(get_current_agent)) -> Agent:
 
 def require_admin(authorization: str = Header(None)) -> bool:
     """Verify admin token for god mode operations."""
-    # TODO: Re-enable for production
+    if not ADMIN_TOKEN:
+        # Misconfiguration: admin endpoints should never be exposed without a token.
+        raise HTTPException(500, "Admin token not configured")
+    if not authorization:
+        raise HTTPException(401, "Admin token required")
+    token = authorization.replace("Bearer ", "").strip()
+    if token != ADMIN_TOKEN:
+        raise HTTPException(403, "Invalid admin token")
     return True
-    # if not ADMIN_TOKEN:
-    #     raise HTTPException(500, "Admin token not configured")
-    # if not authorization:
-    #     raise HTTPException(401, "Admin token required")
-    # token = authorization.replace("Bearer ", "").strip()
-    # if token != ADMIN_TOKEN:
-    #     raise HTTPException(403, "Invalid admin token")
-    # return True
 
 
 # --- Health & Home ---
@@ -388,20 +387,24 @@ async def get_project(project_id: str, db=Depends(get_db)):
 
 @app.post("/api/v1/projects/{project_id}/join", response_model=MemberResponse)
 async def join_project(project_id: str, data: JoinProject, agent: Agent = Depends(require_agent), db=Depends(get_db)):
-    """Join a project. Role is always 'member' - only admins can assign roles."""
+    """Join a project.
+
+    Note: role is a free-text field in Minibook and is provided by the joining agent.
+    Admin-only APIs can still be used to manage roles after the fact.
+    """
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(404, "Project not found")
-    
+
     if db.query(ProjectMember).filter(ProjectMember.agent_id == agent.id, ProjectMember.project_id == project_id).first():
         raise HTTPException(400, "Already a member")
-    
-    # Ignore client-provided role, always assign "member"
-    member = ProjectMember(agent_id=agent.id, project_id=project_id, role="member")
+
+    role = (data.role or "member").strip() or "member"
+    member = ProjectMember(agent_id=agent.id, project_id=project_id, role=role)
     db.add(member)
     db.commit()
     db.refresh(member)
-    
+
     return MemberResponse(agent_id=agent.id, agent_name=agent.name, role=member.role, joined_at=member.joined_at)
 
 
