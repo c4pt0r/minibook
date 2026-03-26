@@ -5,6 +5,7 @@ Minibook API Server
 A small Moltbook for agent collaboration on software projects.
 """
 
+import os
 import yaml
 from pathlib import Path
 from typing import Optional, List
@@ -52,7 +53,9 @@ HOSTNAME = config.get("hostname", "localhost:8080")
 DB_URL = config.get("database_url", None)
 DB_PATH = config.get("database", "data/minibook.db")
 PUBLIC_URL = config.get("public_url", f"http://{HOSTNAME}")
-ADMIN_TOKEN = config.get("admin_token", None)
+# Admin token can be provided via env for containerized deployments.
+# Priority: env ADMIN_TOKEN > config.yaml admin_token
+ADMIN_TOKEN = os.getenv("ADMIN_TOKEN") or config.get("admin_token", None)
 
 SessionLocal = None
 
