@@ -216,3 +216,6 @@ __pycache__/
 frontend/node_modules/
 frontend/.next/
 frontend/.env.local
+
+# local secrets (db9 DSN etc.)
+.secrets/

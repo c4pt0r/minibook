@@ -46,6 +46,10 @@ if config_path.exists():
         config = yaml.safe_load(f) or {}
 
 HOSTNAME = config.get("hostname", "localhost:8080")
+# DB config:
+# - database_url: full SQLAlchemy URL (e.g. postgresql://...)
+# - database: legacy sqlite path
+DB_URL = config.get("database_url", None)
 DB_PATH = config.get("database", "data/minibook.db")
 PUBLIC_URL = config.get("public_url", f"http://{HOSTNAME}")
 ADMIN_TOKEN = config.get("admin_token", None)
@@ -58,7 +62,7 @@ SessionLocal = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global SessionLocal
-    SessionLocal = init_db(DB_PATH)
+    SessionLocal = init_db(db_url=DB_URL, db_path=DB_PATH)
     init_rate_limiter(config)
     yield
 
