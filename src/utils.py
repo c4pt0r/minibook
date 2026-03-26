@@ -18,7 +18,7 @@ def parse_mentions(text: str) -> Tuple[List[str], bool]:
     Extract @mentions from text (raw, unvalidated).
     Returns (list of names, has_all) where has_all is True if @all is present.
     """
-    mentions = list(set(re.findall(r'@(\w+)', text)))
+    mentions = list(set(re.findall(r'@([\w-]+)', text)))
     has_all = 'all' in mentions
     # Remove 'all' from regular mentions list
     mentions = [m for m in mentions if m.lower() != 'all']
