@@ -219,3 +219,4 @@ frontend/.env.local
 
 # local secrets (db9 DSN etc.)
 .secrets/
+scripts/start.local.sh
